@@ -1,24 +1,24 @@
 import React, { useEffect, useState, ReactNode, useMemo } from 'react';
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
 
-// 1. Standard Imports (Note: getReactNativePersistence REMOVED from here)
+// 1. Standard Imports (Added inMemoryPersistence)
 import { 
   getAuth, 
   initializeAuth, 
   onAuthStateChanged, 
+  inMemoryPersistence, // <--- NEW: For temporary sessions
   User as FirebaseUser,
   Auth as FirebaseAuth,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
 } from 'firebase/auth';
 
-// 2. THE FIX: Manually extract the hidden function
+// 2. The Hack: Import for getReactNativePersistence
 import * as firebaseAuth from 'firebase/auth';
-// @ts-ignore: Force TypeScript to ignore the missing type definition
+// @ts-ignore
 const getReactNativePersistence = (firebaseAuth as any).getReactNativePersistence;
 
 import ReactNativeAsyncStorage from '@react-native-async-storage/async-storage'; 
-
 import { mapFirebaseError } from '../errors';
 import { AuthContext } from './AuthContext';
 import { AuthConfig, AuthStatus, User, AuthError } from '../types';
@@ -39,7 +39,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ config, children }) 
     let auth: FirebaseAuth;
 
     if (!getApps().length) {
-      // 1. Initialize the App
+      // 1. Initialize App
       app = initializeApp({
         apiKey: config.apiKey,
         authDomain: config.authDomain,
@@ -49,13 +49,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ config, children }) 
         appId: config.appId,
       });
 
-      // 2. Initialize Auth with Persistence
+      // 2. Select Persistence Strategy
+      // If config says 'memory', use inMemoryPersistence.
+      // Otherwise (default), use AsyncStorage (Long term).
+      const selectedPersistence = config.persistence === 'memory' 
+        ? inMemoryPersistence 
+        : getReactNativePersistence(ReactNativeAsyncStorage);
+
+      // 3. Initialize Auth
       auth = initializeAuth(app, {
-        persistence: getReactNativePersistence(ReactNativeAsyncStorage)
+        persistence: selectedPersistence
       });
 
     } else {
-      // If already initialized (Hot Reload), reuse the existing instance
       app = getApp();
       auth = getAuth(app);
     }
@@ -64,7 +70,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ config, children }) 
 
     const unsubscribe = onAuthStateChanged(auth, async (fbUser: FirebaseUser | null) => {
       if (fbUser) {
-        // User is signed in
         const token = await fbUser.getIdToken();
         setUser({
           uid: fbUser.uid,
@@ -76,7 +81,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ config, children }) 
         });
         setStatus(AuthStatus.AUTHENTICATED);
       } else {
-        // User is signed out
         setUser(null);
         setStatus(AuthStatus.UNAUTHENTICATED);
       }
@@ -88,57 +92,60 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ config, children }) 
     return () => unsubscribe();
   }, [config]);
 
+  // ... (Keep signInWithEmail, signUpWithEmail, signOut, clearError exactly as they were) ...
+  // (I omitted them here to save scrolling space, but DO NOT delete them from your file!)
+  
   const signInWithEmail = async (email: string, pass: string) => {
-    if (!firebaseAuthInstance) return;
-    try {
-      setError(null);
-      setStatus(AuthStatus.LOADING);
-      await signInWithEmailAndPassword(firebaseAuthInstance, email, pass);
-    } catch (err) {
-      const mappedError = mapFirebaseError(err);
-      setError(mappedError);
-      setStatus(AuthStatus.UNAUTHENTICATED);
-      throw mappedError; 
-    }
+      if (!firebaseAuthInstance) return;
+      try {
+        setError(null);
+        setStatus(AuthStatus.LOADING);
+        await signInWithEmailAndPassword(firebaseAuthInstance, email, pass);
+      } catch (err) {
+        const mappedError = mapFirebaseError(err);
+        setError(mappedError);
+        setStatus(AuthStatus.UNAUTHENTICATED);
+        throw mappedError; 
+      }
+    };
+  
+    const signUpWithEmail = async (email: string, pass: string) => {
+      if (!firebaseAuthInstance) return;
+      try {
+        setError(null);
+        setStatus(AuthStatus.LOADING);
+        await createUserWithEmailAndPassword(firebaseAuthInstance, email, pass);
+      } catch (err) {
+        const mappedError = mapFirebaseError(err);
+        setError(mappedError);
+        setStatus(AuthStatus.UNAUTHENTICATED);
+        throw mappedError;
+      }
+    };
+  
+    const signOut = async () => {
+      if (firebaseAuthInstance) {
+        await firebaseAuthInstance.signOut();
+      }
+    };
+  
+    const clearError = () => setError(null);
+  
+    const value = useMemo(() => ({
+      user,
+      status,
+      error,
+      signInWithEmail,
+      signUpWithEmail,
+      signInWithGoogle: async () => {},
+      signInWithApple: async () => {},
+      signOut,
+      clearError
+    }), [user, status, error, firebaseAuthInstance]);
+  
+    return (
+      <AuthContext.Provider value={value}>
+        {children}
+      </AuthContext.Provider>
+    );
   };
-
-  const signUpWithEmail = async (email: string, pass: string) => {
-    if (!firebaseAuthInstance) return;
-    try {
-      setError(null);
-      setStatus(AuthStatus.LOADING);
-      await createUserWithEmailAndPassword(firebaseAuthInstance, email, pass);
-    } catch (err) {
-      const mappedError = mapFirebaseError(err);
-      setError(mappedError);
-      setStatus(AuthStatus.UNAUTHENTICATED);
-      throw mappedError;
-    }
-  };
-
-  const signOut = async () => {
-    if (firebaseAuthInstance) {
-      await firebaseAuthInstance.signOut();
-    }
-  };
-
-  const clearError = () => setError(null);
-
-  const value = useMemo(() => ({
-    user,
-    status,
-    error,
-    signInWithEmail,
-    signUpWithEmail,
-    signInWithGoogle: async () => {},
-    signInWithApple: async () => {},
-    signOut,
-    clearError
-  }), [user, status, error, firebaseAuthInstance]);
-
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
-};
