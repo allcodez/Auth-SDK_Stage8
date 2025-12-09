@@ -1,4 +1,5 @@
 "use strict";
+// src/types/error.types.ts
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AuthErrorCode = void 0;
 var AuthErrorCode;
@@ -10,6 +11,7 @@ var AuthErrorCode;
     AuthErrorCode["TOKEN_EXPIRED"] = "auth/token-expired";
     AuthErrorCode["NETWORK_ERROR"] = "auth/network-request-failed";
     AuthErrorCode["UNKNOWN"] = "auth/unknown";
+    // Specific to SDK flow
     AuthErrorCode["CONFIG_ERROR"] = "auth/configuration-error";
     AuthErrorCode["CANCELLED"] = "auth/cancelled";
 })(AuthErrorCode || (exports.AuthErrorCode = AuthErrorCode = {}));

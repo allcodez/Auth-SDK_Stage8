@@ -39,8 +39,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.AuthProvider = void 0;
 const react_1 = __importStar(require("react"));
 const app_1 = require("firebase/app");
+// 1. Standard Imports (Added inMemoryPersistence)
 const auth_1 = require("firebase/auth");
+// 2. The Hack: Import for getReactNativePersistence
 const firebaseAuth = __importStar(require("firebase/auth"));
+// @ts-ignore
 const getReactNativePersistence = firebaseAuth.getReactNativePersistence;
 const async_storage_1 = __importDefault(require("@react-native-async-storage/async-storage"));
 const errors_1 = require("../errors");
@@ -55,6 +58,7 @@ const AuthProvider = ({ config, children }) => {
         let app;
         let auth;
         if (!(0, app_1.getApps)().length) {
+            // 1. Initialize App
             app = (0, app_1.initializeApp)({
                 apiKey: config.apiKey,
                 authDomain: config.authDomain,
@@ -63,8 +67,15 @@ const AuthProvider = ({ config, children }) => {
                 messagingSenderId: config.messagingSenderId,
                 appId: config.appId,
             });
+            // 2. Select Persistence Strategy
+            // If config says 'memory', use inMemoryPersistence.
+            // Otherwise (default), use AsyncStorage (Long term).
+            const selectedPersistence = config.persistence === 'memory'
+                ? auth_1.inMemoryPersistence
+                : getReactNativePersistence(async_storage_1.default);
+            // 3. Initialize Auth
             auth = (0, auth_1.initializeAuth)(app, {
-                persistence: getReactNativePersistence(async_storage_1.default)
+                persistence: selectedPersistence
             });
         }
         else {
@@ -95,6 +106,8 @@ const AuthProvider = ({ config, children }) => {
         });
         return () => unsubscribe();
     }, [config]);
+    // ... (Keep signInWithEmail, signUpWithEmail, signOut, clearError exactly as they were) ...
+    // (I omitted them here to save scrolling space, but DO NOT delete them from your file!)
     const signInWithEmail = async (email, pass) => {
         if (!firebaseAuthInstance)
             return;
