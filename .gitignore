@@ -1,0 +1,15 @@
+# Ignore dependencies
+node_modules/
+
+# Ignore build artifacts (Example App)
+.expo/
+web-build/
+
+# Ignore OS files
+.DS_Store
+
+# IMPORTANT:
+# Usually we ignore 'dist/', but for this task,
+# since you aren't publishing to NPM, 
+# we WILL commit 'dist/' so mentors can run it easily.
+# dist/  <-- Keep this commented out!

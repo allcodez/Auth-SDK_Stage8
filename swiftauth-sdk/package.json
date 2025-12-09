@@ -1,12 +1,36 @@
 {
-    "name": "swiftauth-sdk",
-    "version": "1.0.0",
-    "main": "index.js",
-    "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1"
-    },
-    "keywords": [],
-    "author": "",
-    "license": "ISC",
-    "description": ""
+  "name": "swiftauth-sdk",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc -w",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "react-native",
+    "firebase",
+    "auth",
+    "sdk",
+    "expo"
+  ],
+  "author": "Mobile Ninjas",
+  "license": "ISC",
+  "description": "Modular Authentication SDK for HNG Stage 8",
+  "peerDependencies": {
+    "react": ">=18.0.0",
+    "react-native": ">=0.70.0",
+    "firebase": ">=9.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.7",
+    "@types/react-native": "^0.72.8",
+    "firebase": "^12.6.0",
+    "typescript": "^5.9.3"
+  }
 }
