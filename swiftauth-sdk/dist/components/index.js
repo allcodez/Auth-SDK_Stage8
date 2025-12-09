@@ -14,10 +14,6 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
     for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.SDK_VERSION = void 0;
-__exportStar(require("./core"), exports);
-__exportStar(require("./components"), exports);
-__exportStar(require("./hooks"), exports);
-__exportStar(require("./errors"), exports);
-__exportStar(require("./types"), exports);
-exports.SDK_VERSION = "1.0.0";
+__exportStar(require("./AuthScreen"), exports);
+__exportStar(require("./LoginForm"), exports);
+__exportStar(require("./SignUpForm"), exports);

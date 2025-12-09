@@ -32,11 +32,17 @@ var __importStar = (this && this.__importStar) || (function () {
         return result;
     };
 })();
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AuthProvider = void 0;
 const react_1 = __importStar(require("react"));
 const app_1 = require("firebase/app");
 const auth_1 = require("firebase/auth");
+const firebaseAuth = __importStar(require("firebase/auth"));
+const getReactNativePersistence = firebaseAuth.getReactNativePersistence;
+const async_storage_1 = __importDefault(require("@react-native-async-storage/async-storage"));
 const errors_1 = require("../errors");
 const AuthContext_1 = require("./AuthContext");
 const types_1 = require("../types");
@@ -44,9 +50,10 @@ const AuthProvider = ({ config, children }) => {
     const [user, setUser] = (0, react_1.useState)(null);
     const [status, setStatus] = (0, react_1.useState)(types_1.AuthStatus.LOADING);
     const [error, setError] = (0, react_1.useState)(null);
-    const [firebaseAuth, setFirebaseAuth] = (0, react_1.useState)(null);
+    const [firebaseAuthInstance, setFirebaseAuthInstance] = (0, react_1.useState)(null);
     (0, react_1.useEffect)(() => {
         let app;
+        let auth;
         if (!(0, app_1.getApps)().length) {
             app = (0, app_1.initializeApp)({
                 apiKey: config.apiKey,
@@ -56,12 +63,15 @@ const AuthProvider = ({ config, children }) => {
                 messagingSenderId: config.messagingSenderId,
                 appId: config.appId,
             });
+            auth = (0, auth_1.initializeAuth)(app, {
+                persistence: getReactNativePersistence(async_storage_1.default)
+            });
         }
         else {
             app = (0, app_1.getApp)();
+            auth = (0, auth_1.getAuth)(app);
         }
-        const auth = (0, auth_1.getAuth)(app);
-        setFirebaseAuth(auth);
+        setFirebaseAuthInstance(auth);
         const unsubscribe = (0, auth_1.onAuthStateChanged)(auth, async (fbUser) => {
             if (fbUser) {
                 const token = await fbUser.getIdToken();
@@ -86,12 +96,12 @@ const AuthProvider = ({ config, children }) => {
         return () => unsubscribe();
     }, [config]);
     const signInWithEmail = async (email, pass) => {
-        if (!firebaseAuth)
+        if (!firebaseAuthInstance)
             return;
         try {
             setError(null);
             setStatus(types_1.AuthStatus.LOADING);
-            await (0, auth_1.signInWithEmailAndPassword)(firebaseAuth, email, pass);
+            await (0, auth_1.signInWithEmailAndPassword)(firebaseAuthInstance, email, pass);
         }
         catch (err) {
             const mappedError = (0, errors_1.mapFirebaseError)(err);
@@ -101,12 +111,12 @@ const AuthProvider = ({ config, children }) => {
         }
     };
     const signUpWithEmail = async (email, pass) => {
-        if (!firebaseAuth)
+        if (!firebaseAuthInstance)
             return;
         try {
             setError(null);
             setStatus(types_1.AuthStatus.LOADING);
-            await (0, auth_1.createUserWithEmailAndPassword)(firebaseAuth, email, pass);
+            await (0, auth_1.createUserWithEmailAndPassword)(firebaseAuthInstance, email, pass);
         }
         catch (err) {
             const mappedError = (0, errors_1.mapFirebaseError)(err);
@@ -115,15 +125,9 @@ const AuthProvider = ({ config, children }) => {
             throw mappedError;
         }
     };
-    const signInWithGoogle = async () => {
-        console.log("Google Sign In - Not implemented yet");
-    };
-    const signInWithApple = async () => {
-        console.log("Apple Sign In - Not implemented yet");
-    };
     const signOut = async () => {
-        if (firebaseAuth) {
-            await firebaseAuth.signOut();
+        if (firebaseAuthInstance) {
+            await firebaseAuthInstance.signOut();
         }
     };
     const clearError = () => setError(null);
@@ -133,11 +137,11 @@ const AuthProvider = ({ config, children }) => {
         error,
         signInWithEmail,
         signUpWithEmail,
-        signInWithGoogle,
-        signInWithApple,
+        signInWithGoogle: async () => { },
+        signInWithApple: async () => { },
         signOut,
         clearError
-    }), [user, status, error, firebaseAuth]);
+    }), [user, status, error, firebaseAuthInstance]);
     return (react_1.default.createElement(AuthContext_1.AuthContext.Provider, { value: value }, children));
 };
 exports.AuthProvider = AuthProvider;

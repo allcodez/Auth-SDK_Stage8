@@ -1,4 +1,5 @@
 export * from './core';
+export * from './components';
 export * from './hooks';
 export * from './errors';
 export * from './types';

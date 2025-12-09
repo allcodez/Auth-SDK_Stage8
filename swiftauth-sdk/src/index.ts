@@ -3,7 +3,7 @@
 // We will uncomment these as we build them
 export * from './core';
 // export * from './providers';
-// export * from './components';
+export * from './components';
 export * from './hooks';
 export * from './errors';
 export * from './types';
