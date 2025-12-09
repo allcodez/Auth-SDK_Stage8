@@ -1,29 +1,26 @@
-// src/types/config.types.ts
-
 export interface AuthConfig {
+  // ... existing props
   apiKey: string;
   authDomain: string;
   projectId: string;
-  // Optional extras for web/other platforms
   storageBucket?: string;
   messagingSenderId?: string;
   appId?: string;
   
-  // ✅ NEW: Allow developer to choose persistence strategy
-  // 'local' = Keep user logged in forever (Standard Mobile Behavior)
-  // 'memory' = Log user out when app closes (Banking App Behavior)
   persistence?: 'local' | 'memory';
 
-  // Feature flags for the UI
+  // Feature flags
   enableGoogle?: boolean;
   enableApple?: boolean;
   enableEmail?: boolean;
+  
+  // ✅ NEW: Control the Password UI features
+  enablePasswordHints?: boolean; // Show the "8 chars, 1 number" checklist
 }
 
-// Default config values
 export const DEFAULT_AUTH_CONFIG: Partial<AuthConfig> = {
-  enableGoogle: false,
-  enableApple: false,
+  // ... existing defaults
   enableEmail: true,
-  persistence: 'local', // Default to standard mobile behavior
+  persistence: 'local',
+  enablePasswordHints: true, // Default to true (helpful UX)
 };

@@ -1,2 +1,7 @@
 import React from 'react';
-export declare const LoginForm: () => React.JSX.Element;
+import { AuthScreenStyles } from '../types';
+interface LoginFormProps {
+    styles?: AuthScreenStyles;
+}
+export declare const LoginForm: ({ styles: userStyles }: LoginFormProps) => React.JSX.Element;
+export {};

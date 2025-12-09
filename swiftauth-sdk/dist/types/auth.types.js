@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AuthStatus = void 0;
+// The specific states requested in the task
 var AuthStatus;
 (function (AuthStatus) {
     AuthStatus["AUTHENTICATED"] = "AUTHENTICATED";
