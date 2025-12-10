@@ -9,6 +9,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  Image,
 } from 'react-native';
 import { useAuth, AuthStatus } from 'swiftauth-sdk';
 import { Ionicons, Feather } from '@expo/vector-icons';
@@ -27,6 +28,8 @@ export const CustomUIExample = ({ onBack }: Props) => {
     user,
     signInWithEmail,
     signUpWithEmail,
+    signInWithGoogle,
+    signInWithApple,
     signOut,
     status,
     error,
@@ -50,6 +53,24 @@ export const CustomUIExample = ({ onBack }: Props) => {
     }
   };
 
+  const handleGoogleSignIn = async () => {
+    clearError();
+    try {
+      await signInWithGoogle();
+    } catch (e) {
+      console.log('Google Sign-In error handled by SDK');
+    }
+  };
+
+  const handleAppleSignIn = async () => {
+    clearError();
+    try {
+      await signInWithApple();
+    } catch (e) {
+      console.log('Apple Sign-In error handled by SDK');
+    }
+  };
+
   const toggleMode = () => {
     setIsSignUp(!isSignUp);
     clearError();
@@ -70,13 +91,19 @@ export const CustomUIExample = ({ onBack }: Props) => {
           <Text style={styles.badgeText}>Custom UI Example</Text>
         </View>
 
-        <View style={styles.avatarCircle}>
-          <Text style={styles.avatarText}>
-            {user.email?.charAt(0).toUpperCase() || '?'}
-          </Text>
-        </View>
+        {user.photoURL ? (
+          <Image source={{ uri: user.photoURL }} style={styles.avatarImage} />
+        ) : (
+          <View style={styles.avatarCircle}>
+            <Text style={styles.avatarText}>
+              {user.displayName?.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase() || '?'}
+            </Text>
+          </View>
+        )}
 
-        <Text style={styles.profileTitle}>Welcome!</Text>
+        <Text style={styles.profileTitle}>
+          {user.displayName || 'Welcome!'}
+        </Text>
         <Text style={styles.profileEmail}>{user.email}</Text>
 
         <View style={styles.infoCard}>
@@ -161,6 +188,7 @@ export const CustomUIExample = ({ onBack }: Props) => {
             autoCapitalize="none"
             keyboardType="email-address"
             autoComplete="email"
+            editable={!isLoading}
           />
         </View>
 
@@ -175,6 +203,7 @@ export const CustomUIExample = ({ onBack }: Props) => {
               onChangeText={setPassword}
               secureTextEntry={!showPassword}
               autoComplete={isSignUp ? 'new-password' : 'current-password'}
+              editable={!isLoading}
             />
             <TouchableOpacity
               style={styles.eyeButton}
@@ -204,6 +233,34 @@ export const CustomUIExample = ({ onBack }: Props) => {
           )}
         </TouchableOpacity>
 
+        <View style={styles.oauthDivider}>
+          <View style={styles.oauthDividerLine} />
+          <Text style={styles.oauthDividerText}>OR</Text>
+          <View style={styles.oauthDividerLine} />
+        </View>
+
+        <TouchableOpacity
+          style={[styles.oauthButton, styles.googleButton, isLoading && styles.oauthButtonDisabled]}
+          onPress={handleGoogleSignIn}
+          disabled={isLoading}
+          activeOpacity={0.8}
+        >
+          <Ionicons name="logo-google" size={18} color="#1a1a1a" />
+          <Text style={styles.googleButtonText}>Continue with Google</Text>
+        </TouchableOpacity>
+
+        {Platform.OS === 'ios' && (
+          <TouchableOpacity
+            style={[styles.oauthButton, styles.appleButton, isLoading && styles.oauthButtonDisabled]}
+            onPress={handleAppleSignIn}
+            disabled={isLoading}
+            activeOpacity={0.8}
+          >
+            <Ionicons name="logo-apple" size={20} color="#fff" />
+            <Text style={styles.appleButtonText}>Continue with Apple</Text>
+          </TouchableOpacity>
+        )}
+
         <View style={styles.footer}>
           <Text style={styles.footerText}>
             {isSignUp ? 'Already have an account?' : "Don't have an account?"}
@@ -221,7 +278,7 @@ export const CustomUIExample = ({ onBack }: Props) => {
             <Text style={styles.codeHintTitle}>Using the Hook:</Text>
           </View>
           <Text style={styles.codeText}>
-            {`const { signInWithEmail, status, error } = useAuth();\nawait signInWithEmail(email, password);`}
+            {`const { signInWithGoogle } = useAuth();\nawait signInWithGoogle();`}
           </Text>
         </View>
       </ScrollView>
@@ -343,10 +400,56 @@ const styles = StyleSheet.create({
     fontSize: 17,
     letterSpacing: 0.3,
   },
+  oauthDivider: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 24,
+  },
+  oauthDividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: '#334155',
+  },
+  oauthDividerText: {
+    marginHorizontal: 16,
+    color: '#64748b',
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  oauthButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 12,
+    gap: 10,
+  },
+  oauthButtonDisabled: {
+    opacity: 0.5,
+  },
+  googleButton: {
+    backgroundColor: '#fff',
+  },
+  googleButtonText: {
+    color: '#1a1a1a',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  appleButton: {
+    backgroundColor: '#000',
+    borderWidth: 1,
+    borderColor: '#333',
+  },
+  appleButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
   footer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginTop: 24,
+    marginTop: 16,
   },
   footerText: {
     color: '#64748b',
@@ -388,7 +491,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   codeHint: {
-    marginTop: 32,
+    marginTop: 24,
     backgroundColor: '#1e293b',
     borderRadius: 12,
     padding: 16,
@@ -426,6 +529,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#ec4899',
     justifyContent: 'center',
     alignItems: 'center',
+    marginBottom: 20,
+  },
+  avatarImage: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
     marginBottom: 20,
   },
   avatarText: {

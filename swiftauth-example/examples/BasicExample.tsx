@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import { AuthScreen, useAuth } from 'swiftauth-sdk';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -17,7 +17,20 @@ export const BasicExample = ({ onBack }: Props) => {
                     <Ionicons name="checkmark-circle" size={14} color="#166534" />
                     <Text style={styles.badgeText}>Basic Example</Text>
                 </View>
-                <Text style={styles.title}>You're Signed In!</Text>
+
+                {user.photoURL ? (
+                    <Image source={{ uri: user.photoURL }} style={styles.avatar} />
+                ) : (
+                    <View style={styles.avatarPlaceholder}>
+                        <Text style={styles.avatarText}>
+                            {user.displayName?.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase() || '?'}
+                        </Text>
+                    </View>
+                )}
+
+                <Text style={styles.title}>
+                    {user.displayName || "You're Signed In!"}
+                </Text>
                 <Text style={styles.email}>{user.email}</Text>
 
                 <TouchableOpacity style={styles.button} onPress={() => signOut()}>
@@ -65,6 +78,26 @@ const styles = StyleSheet.create({
         color: '#166534',
         fontSize: 12,
         fontWeight: '600',
+    },
+    avatar: {
+        width: 80,
+        height: 80,
+        borderRadius: 40,
+        marginBottom: 16,
+    },
+    avatarPlaceholder: {
+        width: 80,
+        height: 80,
+        borderRadius: 40,
+        backgroundColor: '#007AFF',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: 16,
+    },
+    avatarText: {
+        fontSize: 32,
+        fontWeight: 'bold',
+        color: '#fff',
     },
     title: {
         fontSize: 28,

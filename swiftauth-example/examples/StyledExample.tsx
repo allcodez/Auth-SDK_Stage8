@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import { AuthScreen, useAuth } from 'swiftauth-sdk';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -17,13 +17,26 @@ export const StyledExample = ({ onBack }: Props) => {
           <Ionicons name="color-palette" size={14} color="#1e40af" />
           <Text style={styles.badgeText}>Styled Example</Text>
         </View>
-        <Text style={styles.title}>Welcome back!</Text>
+
+        {user.photoURL ? (
+          <Image source={{ uri: user.photoURL }} style={styles.avatar} />
+        ) : (
+          <View style={styles.avatarPlaceholder}>
+            <Text style={styles.avatarText}>
+              {user.displayName?.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase() || '?'}
+            </Text>
+          </View>
+        )}
+
+        <Text style={styles.title}>
+          {user.displayName || 'Welcome back!'}
+        </Text>
         <Text style={styles.email}>{user.email}</Text>
-        
+
         <TouchableOpacity style={styles.button} onPress={() => signOut()}>
           <Text style={styles.buttonText}>Sign Out</Text>
         </TouchableOpacity>
-        
+
         <TouchableOpacity style={styles.backButton} onPress={onBack}>
           <Ionicons name="arrow-back" size={16} color="#0284c7" />
           <Text style={styles.backText}>Back to Examples</Text>
@@ -38,8 +51,8 @@ export const StyledExample = ({ onBack }: Props) => {
         <Ionicons name="arrow-back" size={16} color="#0284c7" />
         <Text style={styles.floatingBackText}>Examples</Text>
       </TouchableOpacity>
-      
-      <AuthScreen 
+
+      <AuthScreen
         titles={{
           loginTitle: 'Welcome Back',
           loginSubtitle: 'Sign in to continue your journey',
@@ -48,19 +61,19 @@ export const StyledExample = ({ onBack }: Props) => {
         }}
         showPasswordHints={true}
         styles={{
-          container: { 
+          container: {
             backgroundColor: '#f0f9ff',
           },
           header: {
             marginBottom: 40,
           },
-          title: { 
+          title: {
             fontSize: 32,
             fontWeight: '800',
             color: '#0c4a6e',
             letterSpacing: -0.5,
           },
-          subtitle: { 
+          subtitle: {
             fontSize: 15,
             color: '#0369a1',
             letterSpacing: 0.3,
@@ -116,7 +129,7 @@ export const StyledExample = ({ onBack }: Props) => {
             fontSize: 12,
           },
           loadingIndicatorColor: '#0284c7',
-        }} 
+        }}
       />
     </View>
   );
@@ -144,6 +157,26 @@ const styles = StyleSheet.create({
     color: '#1e40af',
     fontSize: 12,
     fontWeight: '600',
+  },
+  avatar: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    marginBottom: 16,
+  },
+  avatarPlaceholder: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: '#0284c7',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  avatarText: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: '#fff',
   },
   title: {
     fontSize: 28,
