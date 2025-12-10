@@ -1,10 +1,19 @@
 // swiftauth-example/firebaseConfig.ts
 export const firebaseConfig = {
-  apiKey: "AIzaSyBF8E-CKtxC4tlXl1z7Sfvzyt8l2QIbdYA",
-  authDomain: "testapp-c65f9.firebaseapp.com",
-  projectId: "testapp-c65f9",
-  storageBucket: "testapp-c65f9.firebasestorage.app",
-  messagingSenderId: "756732535420",
-  appId: "1:756732535420:web:f8b58b3d7696cfe917dff9",
-  measurementId: "G-FRKEBZLD4P"
+  apiKey: "AIzaSyBVneQuzjd4hjIpb3m986AQTa702qhqX7E",
+  authDomain: "swiftauth-bff6a.firebaseapp.com",
+  projectId: "swiftauth-bff6a",
+  storageBucket: "swiftauth-bff6a.firebasestorage.app",
+  messagingSenderId: "1068775193882",
+  appId: "1:1068775193882:web:355048d7518ea9126ac0a3",
+  measurementId: "G-5EM500BVZR",
+
+  // Enable Google Sign-In
+  enableGoogle: true,
+  googleWebClientId: '1068775193882-druhsli3utgv3lcocpjpaerrlc4elm0c.apps.googleusercontent.com',
+  googleIOSClientId: '1068775193882-lsr6ps4tq8eneoof88fn8apoglggh4c4.apps.googleusercontent.com',
+
+  // Enable Apple Sign-In
+  enableApple: true,
 };
+

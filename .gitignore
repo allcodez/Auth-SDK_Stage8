@@ -10,6 +10,8 @@ web-build/
 
 # IMPORTANT:
 # Usually we ignore 'dist/', but for this task,
-# since you aren't publishing to NPM, 
+# since you aren't publishing to NPM,
 # we WILL commit 'dist/' so mentors can run it easily.
 # dist/  <-- Keep this commented out!
+
+.k

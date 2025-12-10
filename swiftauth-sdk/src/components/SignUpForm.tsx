@@ -1,18 +1,32 @@
-import React, { useState, useEffect } from 'react';
-import { View, TextInput, Text, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
+import React, { useState } from 'react';
+import {
+  View,
+  TextInput,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  ActivityIndicator,
+  Platform
+} from 'react-native';
+
 import { useAuth } from '../hooks/useAuth';
 import { AuthStatus, AuthScreenStyles } from '../types';
 import { PasswordInput } from './PasswordInput';
 
 interface SignUpFormProps {
   styles?: AuthScreenStyles;
-  // We need to know if hints are enabled from config
-  showHints?: boolean; 
+  showHints?: boolean;
 }
 
 export const SignUpForm = ({ styles: userStyles, showHints = true }: SignUpFormProps) => {
-  const { signUpWithEmail, status, error } = useAuth();
-  
+  const {
+    signUpWithEmail,
+    signInWithGoogle,
+    signInWithApple,
+    status,
+    error
+  } = useAuth();
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -26,7 +40,6 @@ export const SignUpForm = ({ styles: userStyles, showHints = true }: SignUpFormP
   ];
 
   const handleSignUp = async () => {
-    // 1. Validation Checks
     if (password !== confirmPassword) {
       setValidationError("Passwords do not match.");
       return;
@@ -35,18 +48,31 @@ export const SignUpForm = ({ styles: userStyles, showHints = true }: SignUpFormP
       setValidationError("Password is too short.");
       return;
     }
+
     setValidationError(null);
 
-    // 2. Attempt Sign Up
     try {
       await signUpWithEmail(email, password);
+    } catch (e) {}
+  };
+
+  const handleGoogleSignIn = async () => {
+    try {
+      await signInWithGoogle();
     } catch (e) {
-      // Error handled by context
+      console.error('Google Sign-In Error:', e);
+    }
+  };
+
+  const handleAppleSignIn = async () => {
+    try {
+      await signInWithApple();
+    } catch (e) {
+      console.error('Apple Sign-In Error:', e);
     }
   };
 
   const isLoading = status === AuthStatus.LOADING;
-  // Show actual error or validation error
   const displayError = validationError || (error ? error.message : null);
 
   return (
@@ -56,7 +82,8 @@ export const SignUpForm = ({ styles: userStyles, showHints = true }: SignUpFormP
           {displayError}
         </Text>
       )}
-      
+
+      {/* Email */}
       <TextInput
         style={[defaultStyles.input, userStyles?.input]}
         placeholder="Email"
@@ -66,22 +93,24 @@ export const SignUpForm = ({ styles: userStyles, showHints = true }: SignUpFormP
         keyboardType="email-address"
         placeholderTextColor="#999"
       />
-      
-      <PasswordInput 
+
+      {/* Password */}
+      <PasswordInput
         styles={userStyles}
         placeholder="Password"
         value={password}
         onChangeText={setPassword}
       />
 
-      <PasswordInput 
+      {/* Confirm Password */}
+      <PasswordInput
         styles={userStyles}
         placeholder="Confirm Password"
         value={confirmPassword}
         onChangeText={setConfirmPassword}
       />
 
-      {/* ✅ Password Hints Section (Only shows if config enabled & user is typing) */}
+      {/* Password Requirements */}
       {showHints && password.length > 0 && (
         <View style={[defaultStyles.hintContainer, userStyles?.hintContainer]}>
           {requirements.map((req, index) => (
@@ -89,11 +118,13 @@ export const SignUpForm = ({ styles: userStyles, showHints = true }: SignUpFormP
               <Text style={{ fontSize: 14, marginRight: 6 }}>
                 {req.met ? "✅" : "⚪"}
               </Text>
-              <Text style={[
-                defaultStyles.hintText, 
-                userStyles?.hintText,
-                req.met && (userStyles?.hintTextMet || defaultStyles.hintTextMet)
-              ]}>
+              <Text
+                style={[
+                  defaultStyles.hintText,
+                  userStyles?.hintText,
+                  req.met && (userStyles?.hintTextMet || defaultStyles.hintTextMet)
+                ]}
+              >
                 {req.label}
               </Text>
             </View>
@@ -101,12 +132,13 @@ export const SignUpForm = ({ styles: userStyles, showHints = true }: SignUpFormP
         </View>
       )}
 
-      <TouchableOpacity 
+      {/* Create Account */}
+      <TouchableOpacity
         style={[
-          defaultStyles.button, 
-          isLoading && defaultStyles.buttonDisabled, 
+          defaultStyles.button,
+          isLoading && defaultStyles.buttonDisabled,
           userStyles?.button
-        ]} 
+        ]}
         onPress={handleSignUp}
         disabled={isLoading}
       >
@@ -118,12 +150,44 @@ export const SignUpForm = ({ styles: userStyles, showHints = true }: SignUpFormP
           </Text>
         )}
       </TouchableOpacity>
+
+      {/* Divider */}
+      <View style={defaultStyles.dividerContainer}>
+        <View style={defaultStyles.divider} />
+        <Text style={defaultStyles.dividerText}>OR</Text>
+        <View style={defaultStyles.divider} />
+      </View>
+
+      {/* Google */}
+      <TouchableOpacity
+        style={[defaultStyles.oauthButton, defaultStyles.googleButton]}
+        onPress={handleGoogleSignIn}
+        disabled={isLoading}
+      >
+        <Text style={defaultStyles.googleButtonText}>
+          {isLoading ? '...' : '🔍 Sign up with Google'}
+        </Text>
+      </TouchableOpacity>
+
+      {/* Apple */}
+      {Platform.OS === 'ios' && (
+        <TouchableOpacity
+          style={[defaultStyles.oauthButton, defaultStyles.appleButton]}
+          onPress={handleAppleSignIn}
+          disabled={isLoading}
+        >
+          <Text style={defaultStyles.appleButtonText}>
+            {isLoading ? '...' : 'Sign up with Apple'}
+          </Text>
+        </TouchableOpacity>
+      )}
     </View>
   );
 };
 
 const defaultStyles = StyleSheet.create({
   container: { width: '100%', marginVertical: 10 },
+
   input: {
     backgroundColor: '#f5f5f5',
     padding: 15,
@@ -133,18 +197,49 @@ const defaultStyles = StyleSheet.create({
     borderColor: '#e0e0e0',
     fontSize: 16,
   },
+
   button: {
-    backgroundColor: '#34C759', 
+    backgroundColor: '#34C759',
     padding: 15,
     borderRadius: 8,
     alignItems: 'center',
     marginTop: 8,
   },
+
   buttonDisabled: { backgroundColor: '#9ce4ae' },
+
   buttonText: { color: '#fff', fontWeight: '600', fontSize: 16 },
+
   errorText: { color: 'red', marginBottom: 12, fontSize: 14 },
-  
-  // Hint Styles
+
+  // OAuth Styles
+  dividerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 20,
+  },
+  divider: { flex: 1, height: 1, backgroundColor: '#e0e0e0' },
+  dividerText: { marginHorizontal: 16, color: '#666', fontSize: 14 },
+
+  oauthButton: {
+    padding: 15,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginBottom: 10,
+    flexDirection: 'row',
+    justifyContent: 'center',
+  },
+  googleButton: {
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+  },
+  googleButtonText: { color: '#000', fontSize: 16, fontWeight: '500' },
+
+  appleButton: { backgroundColor: '#000' },
+  appleButtonText: { color: '#fff', fontSize: 16, fontWeight: '600' },
+
+  // Password Hint Styles
   hintContainer: { marginBottom: 15, paddingLeft: 5 },
   hintRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 4 },
   hintText: { color: '#666', fontSize: 12 },
