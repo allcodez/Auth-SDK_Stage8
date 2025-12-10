@@ -40,5 +40,7 @@ export const DEFAULT_AUTH_CONFIG: Partial<AuthConfig> = {
     enableGoogleAuth: true,
     enableAppleAuth: true,
     enableEmailAuth: true,
-  }
+  },
+
+  enablePasswordHints: true,
 };

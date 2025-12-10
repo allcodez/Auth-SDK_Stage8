@@ -18,6 +18,7 @@ const mapFirebaseError = (error) => {
     }
     const fbError = error;
     switch (fbError.code) {
+        // Email/Password Errors
         case 'auth/invalid-email':
         case 'auth/user-not-found':
         case 'auth/wrong-password':
@@ -45,6 +46,7 @@ const mapFirebaseError = (error) => {
                 message: 'Network error. Please check your connection.',
                 originalError: error
             };
+        // Google Sign-In Errors
         case 'auth/popup-closed-by-user':
         case 'auth/cancelled-popup-request':
             return {
@@ -76,6 +78,7 @@ const mapFirebaseError = (error) => {
                 message: 'This account has been disabled.',
                 originalError: error
             };
+        // Apple Sign-In Errors
         case 'auth/invalid-verification-code':
         case 'auth/invalid-verification-id':
             return {
@@ -83,6 +86,7 @@ const mapFirebaseError = (error) => {
                 message: 'The verification code is invalid. Please try again.',
                 originalError: error
             };
+        // Token Expiration
         case 'auth/id-token-expired':
         case 'auth/user-token-expired':
             return {
@@ -90,6 +94,7 @@ const mapFirebaseError = (error) => {
                 message: 'Your session has expired. Please sign in again.',
                 originalError: error
             };
+        // OAuth-Specific Errors
         case 'auth/unauthorized-domain':
             return {
                 code: types_1.AuthErrorCode.UNKNOWN,

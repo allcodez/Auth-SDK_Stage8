@@ -14,10 +14,12 @@ var AuthErrorCode;
     // Specific to SDK flow
     AuthErrorCode["CONFIG_ERROR"] = "auth/configuration-error";
     AuthErrorCode["CANCELLED"] = "auth/cancelled";
+    // Google Sign-In Errors
     AuthErrorCode["GOOGLE_SIGN_IN_CANCELLED"] = "GOOGLE_SIGN_IN_CANCELLED";
     AuthErrorCode["GOOGLE_SIGN_IN_IN_PROGRESS"] = "GOOGLE_SIGN_IN_IN_PROGRESS";
     AuthErrorCode["GOOGLE_PLAY_SERVICES_NOT_AVAILABLE"] = "GOOGLE_PLAY_SERVICES_NOT_AVAILABLE";
     AuthErrorCode["GOOGLE_SIGN_IN_FAILED"] = "GOOGLE_SIGN_IN_FAILED";
+    // Apple Sign-In Errors
     AuthErrorCode["APPLE_SIGN_IN_CANCELLED"] = "APPLE_SIGN_IN_CANCELLED";
     AuthErrorCode["APPLE_SIGN_IN_FAILED"] = "APPLE_SIGN_IN_FAILED";
     AuthErrorCode["APPLE_SIGN_IN_NOT_SUPPORTED"] = "APPLE_SIGN_IN_NOT_SUPPORTED";
