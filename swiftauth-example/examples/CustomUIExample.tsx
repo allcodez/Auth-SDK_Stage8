@@ -1,16 +1,17 @@
 import React, { useState } from 'react';
-import { 
-  View, 
-  Text, 
-  TextInput, 
-  TouchableOpacity, 
-  StyleSheet, 
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
 } from 'react-native';
 import { useAuth, AuthStatus } from 'swiftauth-sdk';
+import { Ionicons, Feather } from '@expo/vector-icons';
 
 interface Props {
   onBack: () => void;
@@ -21,15 +22,15 @@ export const CustomUIExample = ({ onBack }: Props) => {
   const [password, setPassword] = useState('');
   const [isSignUp, setIsSignUp] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  
-  const { 
+
+  const {
     user,
-    signInWithEmail, 
-    signUpWithEmail, 
+    signInWithEmail,
+    signUpWithEmail,
     signOut,
-    status, 
-    error, 
-    clearError 
+    status,
+    error,
+    clearError
   } = useAuth();
 
   const isLoading = status === AuthStatus.LOADING;
@@ -60,20 +61,24 @@ export const CustomUIExample = ({ onBack }: Props) => {
     return (
       <View style={styles.profileContainer}>
         <TouchableOpacity style={styles.backButtonTop} onPress={onBack}>
-          <Text style={styles.backButtonTopText}>← Examples</Text>
+          <Ionicons name="arrow-back" size={14} color="#f472b6" />
+          <Text style={styles.backButtonTopText}>Examples</Text>
         </TouchableOpacity>
 
-        <Text style={styles.badge}>🛠️ Custom UI Example</Text>
-        
+        <View style={styles.badgeContainer}>
+          <Feather name="tool" size={14} color="#c4b5fd" />
+          <Text style={styles.badgeText}>Custom UI Example</Text>
+        </View>
+
         <View style={styles.avatarCircle}>
           <Text style={styles.avatarText}>
             {user.email?.charAt(0).toUpperCase() || '?'}
           </Text>
         </View>
-        
+
         <Text style={styles.profileTitle}>Welcome!</Text>
         <Text style={styles.profileEmail}>{user.email}</Text>
-        
+
         <View style={styles.infoCard}>
           <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>User ID</Text>
@@ -82,12 +87,19 @@ export const CustomUIExample = ({ onBack }: Props) => {
           <View style={styles.divider} />
           <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>Verified</Text>
-            <Text style={[styles.infoValue, { color: user.emailVerified ? '#22c55e' : '#f59e0b' }]}>
-              {user.emailVerified ? '✓ Yes' : '⏳ Pending'}
-            </Text>
+            <View style={styles.verifiedRow}>
+              {user.emailVerified ? (
+                <Ionicons name="checkmark-circle" size={16} color="#22c55e" />
+              ) : (
+                <Ionicons name="time-outline" size={16} color="#f59e0b" />
+              )}
+              <Text style={[styles.infoValue, { color: user.emailVerified ? '#22c55e' : '#f59e0b' }]}>
+                {user.emailVerified ? 'Yes' : 'Pending'}
+              </Text>
+            </View>
           </View>
         </View>
-        
+
         <TouchableOpacity style={styles.signOutButton} onPress={() => signOut()}>
           <Text style={styles.signOutText}>Sign Out</Text>
         </TouchableOpacity>
@@ -96,35 +108,42 @@ export const CustomUIExample = ({ onBack }: Props) => {
   }
 
   return (
-    <KeyboardAvoidingView 
-      style={styles.container} 
+    <KeyboardAvoidingView
+      style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <ScrollView 
+      <ScrollView
         contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
       >
         <TouchableOpacity style={styles.backButtonTop} onPress={onBack}>
-          <Text style={styles.backButtonTopText}>← Examples</Text>
+          <Ionicons name="arrow-back" size={14} color="#f472b6" />
+          <Text style={styles.backButtonTopText}>Examples</Text>
         </TouchableOpacity>
 
-        <Text style={styles.badge}>🛠️ Custom UI Example</Text>
-        
+        <View style={styles.badgeContainer}>
+          <Feather name="tool" size={14} color="#c4b5fd" />
+          <Text style={styles.badgeText}>Custom UI Example</Text>
+        </View>
+
         <View style={styles.header}>
           <Text style={styles.title}>
             {isSignUp ? 'Create Account' : 'Sign In'}
           </Text>
           <Text style={styles.subtitle}>
-            {isSignUp 
-              ? 'Build something amazing today' 
+            {isSignUp
+              ? 'Build something amazing today'
               : 'Welcome back, developer!'}
           </Text>
         </View>
 
         {error && (
           <View style={styles.errorBox}>
-            <Text style={styles.errorTitle}>⚠️ {error.code}</Text>
-            <Text style={styles.errorMessage}>{error.userMessage}</Text>
+            <View style={styles.errorTitleRow}>
+              <Ionicons name="alert-circle" size={16} color="#fca5a5" />
+              <Text style={styles.errorTitle}>{error.code}</Text>
+            </View>
+            <Text style={styles.errorMessage}>{error.message}</Text>
             <TouchableOpacity onPress={clearError}>
               <Text style={styles.dismissError}>Dismiss</Text>
             </TouchableOpacity>
@@ -150,24 +169,28 @@ export const CustomUIExample = ({ onBack }: Props) => {
           <View style={styles.passwordContainer}>
             <TextInput
               style={styles.passwordInput}
-              placeholder="••••••••"
+              placeholder="Enter password"
               placeholderTextColor="#6b7280"
               value={password}
               onChangeText={setPassword}
               secureTextEntry={!showPassword}
               autoComplete={isSignUp ? 'new-password' : 'current-password'}
             />
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.eyeButton}
               onPress={() => setShowPassword(!showPassword)}
             >
-              <Text style={styles.eyeText}>{showPassword ? '🙈' : '👁️'}</Text>
+              <Ionicons
+                name={showPassword ? 'eye-off-outline' : 'eye-outline'}
+                size={20}
+                color="#94a3b8"
+              />
             </TouchableOpacity>
           </View>
         </View>
 
-        <TouchableOpacity 
-          style={[styles.submitButton, isLoading && styles.submitButtonDisabled]} 
+        <TouchableOpacity
+          style={[styles.submitButton, isLoading && styles.submitButtonDisabled]}
           onPress={handleSubmit}
           disabled={isLoading || !email || !password}
           activeOpacity={0.8}
@@ -193,7 +216,10 @@ export const CustomUIExample = ({ onBack }: Props) => {
         </View>
 
         <View style={styles.codeHint}>
-          <Text style={styles.codeHintTitle}>💡 Using the Hook:</Text>
+          <View style={styles.codeHintTitleRow}>
+            <Ionicons name="bulb-outline" size={14} color="#fbbf24" />
+            <Text style={styles.codeHintTitle}>Using the Hook:</Text>
+          </View>
           <Text style={styles.codeText}>
             {`const { signInWithEmail, status, error } = useAuth();\nawait signInWithEmail(email, password);`}
           </Text>
@@ -219,29 +245,36 @@ const styles = StyleSheet.create({
     top: 50,
     left: 20,
     zIndex: 100,
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: 'rgba(30, 41, 59, 0.9)',
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 20,
     borderWidth: 1,
     borderColor: '#334155',
+    gap: 4,
   },
   backButtonTopText: {
     color: '#f472b6',
     fontWeight: '600',
     fontSize: 13,
   },
-  badge: {
+  badgeContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
     alignSelf: 'center',
     backgroundColor: '#1e1b4b',
-    color: '#c4b5fd',
     paddingHorizontal: 14,
     paddingVertical: 6,
     borderRadius: 20,
+    marginBottom: 24,
+    gap: 6,
+  },
+  badgeText: {
+    color: '#c4b5fd',
     fontSize: 12,
     fontWeight: '600',
-    marginBottom: 24,
-    overflow: 'hidden',
   },
   header: {
     marginBottom: 32,
@@ -294,9 +327,6 @@ const styles = StyleSheet.create({
   eyeButton: {
     padding: 16,
   },
-  eyeText: {
-    fontSize: 18,
-  },
   submitButton: {
     backgroundColor: '#ec4899',
     borderRadius: 12,
@@ -335,11 +365,16 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#7f1d1d',
   },
+  errorTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 4,
+  },
   errorTitle: {
     color: '#fca5a5',
     fontWeight: '700',
     fontSize: 14,
-    marginBottom: 4,
   },
   errorMessage: {
     color: '#fecaca',
@@ -360,11 +395,16 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#334155',
   },
+  codeHintTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 8,
+  },
   codeHintTitle: {
     color: '#fbbf24',
     fontSize: 13,
     fontWeight: '600',
-    marginBottom: 8,
   },
   codeText: {
     color: '#a5f3fc',
@@ -428,6 +468,11 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
     maxWidth: '60%',
+  },
+  verifiedRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
   },
   divider: {
     height: 1,

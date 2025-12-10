@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet, StatusBar } from 'react-nativ
 import { AuthProvider } from 'swiftauth-sdk';
 import { firebaseConfig } from './firebaseConfig';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { Ionicons, MaterialCommunityIcons, Feather } from '@expo/vector-icons';
 import { BasicExample, StyledExample, CustomUIExample } from './examples';
 
 type ExampleType = 'menu' | 'basic' | 'styled' | 'custom';
@@ -25,7 +26,7 @@ const ExampleSwitcher = () => {
       <StatusBar barStyle="light-content" />
 
       <View style={styles.header}>
-        <Text style={styles.logo}>⚡️</Text>
+        <Ionicons name="flash" size={48} color="#fbbf24" style={styles.logo} />
         <Text style={styles.title}>SwiftAuth SDK</Text>
         <Text style={styles.subtitle}>Choose an implementation approach</Text>
       </View>
@@ -36,7 +37,7 @@ const ExampleSwitcher = () => {
           onPress={() => setActiveExample('basic')}
           activeOpacity={0.8}
         >
-          <Text style={styles.cardEmoji}>✅</Text>
+          <Ionicons name="checkmark-circle" size={28} color="#22c55e" style={styles.cardIcon} />
           <Text style={styles.cardTitle}>Basic</Text>
           <Text style={styles.cardDescription}>
             Plug-and-play AuthScreen{'\n'}Zero configuration needed
@@ -51,7 +52,7 @@ const ExampleSwitcher = () => {
           onPress={() => setActiveExample('styled')}
           activeOpacity={0.8}
         >
-          <Text style={styles.cardEmoji}>🎨</Text>
+          <Ionicons name="color-palette" size={28} color="#3b82f6" style={styles.cardIcon} />
           <Text style={styles.cardTitle}>Styled</Text>
           <Text style={styles.cardDescription}>
             Custom colors & typography{'\n'}Your brand, our components
@@ -66,7 +67,7 @@ const ExampleSwitcher = () => {
           onPress={() => setActiveExample('custom')}
           activeOpacity={0.8}
         >
-          <Text style={styles.cardEmoji}>🛠️</Text>
+          <Feather name="tool" size={28} color="#a855f7" style={styles.cardIcon} />
           <Text style={styles.cardTitle}>Custom UI</Text>
           <Text style={styles.cardDescription}>
             Build your own interface{'\n'}Full control with hooks
@@ -108,7 +109,6 @@ const styles = StyleSheet.create({
     marginBottom: 40,
   },
   logo: {
-    fontSize: 48,
     marginBottom: 12,
   },
   title: {
@@ -148,8 +148,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#a855f7',
   },
-  cardEmoji: {
-    fontSize: 28,
+  cardIcon: {
     marginBottom: 8,
   },
   cardTitle: {

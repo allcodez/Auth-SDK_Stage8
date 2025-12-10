@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { AuthScreen, useAuth } from 'swiftauth-sdk';
+import { Ionicons } from '@expo/vector-icons';
 
 interface Props {
   onBack: () => void;
@@ -12,7 +13,10 @@ export const StyledExample = ({ onBack }: Props) => {
   if (user) {
     return (
       <View style={styles.container}>
-        <Text style={styles.badge}>🎨 Styled Example</Text>
+        <View style={styles.badgeContainer}>
+          <Ionicons name="color-palette" size={14} color="#1e40af" />
+          <Text style={styles.badgeText}>Styled Example</Text>
+        </View>
         <Text style={styles.title}>Welcome back!</Text>
         <Text style={styles.email}>{user.email}</Text>
         
@@ -21,7 +25,8 @@ export const StyledExample = ({ onBack }: Props) => {
         </TouchableOpacity>
         
         <TouchableOpacity style={styles.backButton} onPress={onBack}>
-          <Text style={styles.backText}>← Back to Examples</Text>
+          <Ionicons name="arrow-back" size={16} color="#0284c7" />
+          <Text style={styles.backText}>Back to Examples</Text>
         </TouchableOpacity>
       </View>
     );
@@ -30,7 +35,8 @@ export const StyledExample = ({ onBack }: Props) => {
   return (
     <View style={{ flex: 1 }}>
       <TouchableOpacity style={styles.floatingBack} onPress={onBack}>
-        <Text style={styles.floatingBackText}>← Examples</Text>
+        <Ionicons name="arrow-back" size={16} color="#0284c7" />
+        <Text style={styles.floatingBackText}>Examples</Text>
       </TouchableOpacity>
       
       <AuthScreen 
@@ -124,15 +130,20 @@ const styles = StyleSheet.create({
     backgroundColor: '#f0f9ff',
     padding: 24,
   },
-  badge: {
+  badgeContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: '#dbeafe',
-    color: '#1e40af',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 20,
+    marginBottom: 24,
+    gap: 6,
+  },
+  badgeText: {
+    color: '#1e40af',
     fontSize: 12,
     fontWeight: '600',
-    marginBottom: 24,
   },
   title: {
     fontSize: 28,
@@ -157,7 +168,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   backButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
     marginTop: 24,
+    gap: 4,
   },
   backText: {
     color: '#0284c7',
@@ -168,12 +182,15 @@ const styles = StyleSheet.create({
     top: 60,
     left: 20,
     zIndex: 100,
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: 'rgba(240,249,255,0.95)',
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 20,
     borderWidth: 1,
     borderColor: '#bae6fd',
+    gap: 4,
   },
   floatingBackText: {
     color: '#0284c7',
