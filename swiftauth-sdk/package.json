@@ -1,42 +1,62 @@
 {
-  "name": "swiftauth-sdk",
-  "version": "1.0.0",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "files": [
-    "dist",
-    "src"
-  ],
-  "scripts": {
-    "build": "tsc",
-    "watch": "tsc -w",
-    "prepublishOnly": "npm run build"
-  },
-  "keywords": [
-    "react-native",
-    "firebase",
-    "auth",
-    "sdk",
-    "expo"
-  ],
-  "author": "Mobile Ninjas",
-  "license": "ISC",
-  "description": "Modular Authentication SDK for HNG Stage 8",
-  "peerDependencies": {
-    "firebase": ">=9.0.0",
-    "react": ">=18.0.0",
-    "react-native": ">=0.70.0",
-    "@react-native-async-storage/async-storage": ">=1.18.0",
-    "react-native-safe-area-context": ">=4.0.0"
-  },
-  "devDependencies": {
-    "@types/react": "^18.0.0",
-    "@types/react-native": "^0.72.8",
-    "firebase": "^12.6.0",
-    "typescript": "^5.0.0",
-    "@react-native-async-storage/async-storage": "^2.1.0",
-    "react-native-safe-area-context": "^5.6.2",
-    "react": "18.3.1",        
-    "react-native": "0.76.1"  
-  }
+    "name": "swiftauth-sdk",
+    "version": "1.0.0",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "files": [
+        "dist",
+        "src"
+    ],
+    "scripts": {
+        "build": "tsc",
+        "watch": "tsc -w",
+        "prepublishOnly": "npm run build"
+    },
+    "keywords": [
+        "react-native",
+        "firebase",
+        "auth",
+        "sdk",
+        "expo",
+        "google-signin",
+        "apple-signin",
+        "oauth"
+    ],
+    "author": "Mobile Ninjas - HNG Stage 8",
+    "license": "MIT",
+    "description": "Modular Authentication SDK with Firebase, Google Sign-In, and Apple Sign-In support",
+    "peerDependencies": {
+        "@react-native-async-storage/async-storage": ">=1.18.0",
+        "@react-native-google-signin/google-signin": ">=10.0.0",
+        "expo-apple-authentication": ">=6.0.0",
+        "expo-crypto": ">=13.0.0",
+        "firebase": ">=9.0.0",
+        "react": ">=18.0.0",
+        "react-native": ">=0.70.0",
+        "react-native-safe-area-context": ">=4.0.0"
+    },
+    "peerDependenciesMeta": {
+        "@react-native-google-signin/google-signin": {
+            "optional": false
+        },
+        "expo-apple-authentication": {
+            "optional": false
+        },
+        "expo-crypto": {
+            "optional": false
+        }
+    },
+    "devDependencies": {
+        "@react-native-async-storage/async-storage": "^2.1.0",
+        "@react-native-google-signin/google-signin": "^13.1.0",
+        "@types/react": "^18.0.0",
+        "@types/react-native": "^0.72.8",
+        "expo-apple-authentication": "^6.4.2",
+        "expo-crypto": "^13.0.2",
+        "firebase": "^12.6.0",
+        "react": "18.3.1",
+        "react-native": "0.76.1",
+        "react-native-safe-area-context": "^5.6.2",
+        "typescript": "^5.0.0"
+    }
 }

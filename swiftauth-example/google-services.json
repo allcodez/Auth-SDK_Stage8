@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "1068775193882",
+    "project_id": "swiftauth-bff6a",
+    "storage_bucket": "swiftauth-bff6a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1068775193882:android:4f390012e4ad2c1b6ac0a3",
+        "android_client_info": {
+          "package_name": "com.hng.swiftauth"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1068775193882-druhsli3utgv3lcocpjpaerrlc4elm0c.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB8bknKE3Y6F3k5ctgS1GKX1yL91wjFArA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1068775193882-druhsli3utgv3lcocpjpaerrlc4elm0c.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1068775193882-lsr6ps4tq8eneoof88fn8apoglggh4c4.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.hng.swiftauth"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

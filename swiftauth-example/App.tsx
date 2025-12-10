@@ -1,15 +1,13 @@
 // swiftauth-example/App.tsx
 import React from 'react';
 import { View, Text, Button, StyleSheet } from 'react-native';
-// Import the new component
 import { AuthProvider, AuthScreen, useAuth } from 'swiftauth-sdk';
 import { firebaseConfig } from './firebaseConfig';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-// A wrapper to handle the "Authenticated" state
+
 const AppContent = () => {
   const { user, signOut } = useAuth();
 
-  // If user is logged in, show their profile
   if (user) {
     return (
       <View style={styles.center}>
@@ -21,15 +19,15 @@ const AppContent = () => {
 
   // If not logged in, show the Plug-and-Play Auth Screen
   return (
-  <AuthScreen 
+  <AuthScreen
   styles={{
     // 1. Container Styles
-    container: { 
-      backgroundColor: '#f0f9ff' 
+    container: {
+      backgroundColor: '#f0f9ff'
     },
 
     // 2. Title Styling (Font Size, Weight, Family)
-    title: { 
+    title: {
       fontSize: 32,              // ✅ Change Size
       fontWeight: '800',         // ✅ Change Weight
       color: '#0c4a6e',
@@ -38,7 +36,7 @@ const AppContent = () => {
     },
 
     // 3. Subtitle Styling
-    subtitle: { 
+    subtitle: {
       fontSize: 14,
       color: '#0369a1',
       letterSpacing: 1.5         // ✅ Advanced typography works too!
@@ -59,17 +57,26 @@ const AppContent = () => {
       fontWeight: 'bold',
       textTransform: 'uppercase' // ✅ CSS-like transforms
     }
-  }} 
+  }}
 />
 );
 };
 
 export default function App() {
   return (
-  <SafeAreaProvider>
-      <AuthProvider config={firebaseConfig}>
-          <AppContent />
-        </AuthProvider>
+    <SafeAreaProvider>
+      <AuthProvider
+        config={{
+          ...firebaseConfig,
+          ui: {
+            enableGoogleAuth: false,
+            enableAppleAuth: false,
+            enableEmailAuth: true,
+          }
+        }}
+      >
+        <AppContent />
+      </AuthProvider>
     </SafeAreaProvider>
   );
 }
