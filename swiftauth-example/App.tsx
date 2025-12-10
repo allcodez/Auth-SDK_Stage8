@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet, StatusBar } from 'react-nativ
 import { AuthProvider } from 'swiftauth-sdk';
 import { firebaseConfig } from './firebaseConfig';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { Ionicons, MaterialCommunityIcons, Feather } from '@expo/vector-icons';
+import { Ionicons, Feather } from '@expo/vector-icons';
 import { BasicExample, StyledExample, CustomUIExample } from './examples';
 
 type ExampleType = 'menu' | 'basic' | 'styled' | 'custom';
@@ -23,64 +23,72 @@ const ExampleSwitcher = () => {
 
   return (
     <View style={styles.menuContainer}>
-      <StatusBar barStyle="light-content" />
+      <StatusBar barStyle="dark-content" />
 
       <View style={styles.header}>
-        <Ionicons name="flash" size={48} color="#fbbf24" style={styles.logo} />
-        <Text style={styles.title}>SwiftAuth SDK</Text>
-        <Text style={styles.subtitle}>Choose an implementation approach</Text>
+        <View style={styles.logoContainer}>
+          <Ionicons name="flash" size={24} color="#fff" />
+        </View>
+        <Text style={styles.title}>SwiftAuth</Text>
+        <Text style={styles.subtitle}>Select an implementation approach</Text>
       </View>
 
       <View style={styles.cardsContainer}>
         <TouchableOpacity
-          style={[styles.card, styles.cardBasic]}
+          style={styles.card}
           onPress={() => setActiveExample('basic')}
-          activeOpacity={0.8}
+          activeOpacity={0.7}
         >
-          <Ionicons name="checkmark-circle" size={28} color="#22c55e" style={styles.cardIcon} />
-          <Text style={styles.cardTitle}>Basic</Text>
-          <Text style={styles.cardDescription}>
-            Plug-and-play AuthScreen{'\n'}Zero configuration needed
-          </Text>
-          <View style={[styles.cardBadge, { backgroundColor: '#dcfce7' }]}>
-            <Text style={[styles.cardBadgeText, { color: '#166534' }]}>Easiest</Text>
+          <View style={styles.cardLeft}>
+            <View style={[styles.iconContainer, { backgroundColor: '#e8f5e9' }]}>
+              <Ionicons name="checkmark" size={20} color="#2e7d32" />
+            </View>
+            <View style={styles.cardContent}>
+              <Text style={styles.cardTitle}>Basic</Text>
+              <Text style={styles.cardDescription}>Zero config, plug-and-play</Text>
+            </View>
           </View>
+          <Ionicons name="chevron-forward" size={20} color="#9ca3af" />
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.card, styles.cardStyled]}
+          style={styles.card}
           onPress={() => setActiveExample('styled')}
-          activeOpacity={0.8}
+          activeOpacity={0.7}
         >
-          <Ionicons name="color-palette" size={28} color="#3b82f6" style={styles.cardIcon} />
-          <Text style={styles.cardTitle}>Styled</Text>
-          <Text style={styles.cardDescription}>
-            Custom colors & typography{'\n'}Your brand, our components
-          </Text>
-          <View style={[styles.cardBadge, { backgroundColor: '#dbeafe' }]}>
-            <Text style={[styles.cardBadgeText, { color: '#1e40af' }]}>Recommended</Text>
+          <View style={styles.cardLeft}>
+            <View style={[styles.iconContainer, { backgroundColor: '#e3f2fd' }]}>
+              <Ionicons name="color-palette-outline" size={20} color="#1565c0" />
+            </View>
+            <View style={styles.cardContent}>
+              <Text style={styles.cardTitle}>Styled</Text>
+              <Text style={styles.cardDescription}>Custom colors and typography</Text>
+            </View>
           </View>
+          <Ionicons name="chevron-forward" size={20} color="#9ca3af" />
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.card, styles.cardCustom]}
+          style={styles.card}
           onPress={() => setActiveExample('custom')}
-          activeOpacity={0.8}
+          activeOpacity={0.7}
         >
-          <Feather name="tool" size={28} color="#a855f7" style={styles.cardIcon} />
-          <Text style={styles.cardTitle}>Custom UI</Text>
-          <Text style={styles.cardDescription}>
-            Build your own interface{'\n'}Full control with hooks
-          </Text>
-          <View style={[styles.cardBadge, { backgroundColor: '#fae8ff' }]}>
-            <Text style={[styles.cardBadgeText, { color: '#86198f' }]}>Advanced</Text>
+          <View style={styles.cardLeft}>
+            <View style={[styles.iconContainer, { backgroundColor: '#fce4ec' }]}>
+              <Feather name="code" size={18} color="#c2185b" />
+            </View>
+            <View style={styles.cardContent}>
+              <Text style={styles.cardTitle}>Custom UI</Text>
+              <Text style={styles.cardDescription}>Full control with hooks</Text>
+            </View>
           </View>
+          <Ionicons name="chevron-forward" size={20} color="#9ca3af" />
         </TouchableOpacity>
       </View>
 
       <View style={styles.footer}>
         <Text style={styles.footerText}>
-          All examples use the same AuthProvider & Firebase config
+          All examples share the same AuthProvider
         </Text>
       </View>
     </View>
@@ -100,89 +108,78 @@ export default function App() {
 const styles = StyleSheet.create({
   menuContainer: {
     flex: 1,
-    backgroundColor: '#0f172a',
-    paddingHorizontal: 20,
-    paddingTop: 60,
+    backgroundColor: '#fafafa',
+    paddingHorizontal: 24,
+    paddingTop: 80,
   },
   header: {
-    alignItems: 'center',
-    marginBottom: 40,
+    marginBottom: 48,
   },
-  logo: {
-    marginBottom: 12,
+  logoContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 12,
+    backgroundColor: '#1a1a1a',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 20,
   },
   title: {
-    fontSize: 32,
-    fontWeight: '800',
-    color: '#f8fafc',
-    marginBottom: 8,
-    letterSpacing: -0.5,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#94a3b8',
-    textAlign: 'center',
-  },
-  cardsContainer: {
-    flex: 1,
-    gap: 16,
-  },
-  card: {
-    borderRadius: 16,
-    padding: 20,
-    position: 'relative',
-    overflow: 'hidden',
-  },
-  cardBasic: {
-    backgroundColor: '#14532d',
-    borderWidth: 1,
-    borderColor: '#22c55e',
-  },
-  cardStyled: {
-    backgroundColor: '#1e3a5f',
-    borderWidth: 1,
-    borderColor: '#3b82f6',
-  },
-  cardCustom: {
-    backgroundColor: '#4a1d6a',
-    borderWidth: 1,
-    borderColor: '#a855f7',
-  },
-  cardIcon: {
-    marginBottom: 8,
-  },
-  cardTitle: {
-    fontSize: 22,
+    fontSize: 28,
     fontWeight: '700',
-    color: '#f8fafc',
+    color: '#1a1a1a',
     marginBottom: 6,
   },
+  subtitle: {
+    fontSize: 15,
+    color: '#6b7280',
+  },
+  cardsContainer: {
+    gap: 12,
+  },
+  card: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#fff',
+    borderRadius: 14,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#f0f0f0',
+  },
+  cardLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+  },
+  iconContainer: {
+    width: 44,
+    height: 44,
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  cardContent: {
+    gap: 2,
+  },
+  cardTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1a1a1a',
+  },
   cardDescription: {
-    fontSize: 14,
-    color: 'rgba(248, 250, 252, 0.7)',
-    lineHeight: 20,
-  },
-  cardBadge: {
-    position: 'absolute',
-    top: 16,
-    right: 16,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  cardBadgeText: {
-    fontSize: 11,
-    fontWeight: '700',
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    fontSize: 13,
+    color: '#9ca3af',
   },
   footer: {
-    paddingVertical: 24,
+    position: 'absolute',
+    bottom: 40,
+    left: 24,
+    right: 24,
     alignItems: 'center',
   },
   footerText: {
     fontSize: 13,
-    color: '#64748b',
-    textAlign: 'center',
+    color: '#9ca3af',
   },
 });
