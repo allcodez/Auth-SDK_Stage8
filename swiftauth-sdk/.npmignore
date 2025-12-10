@@ -1,0 +1,23 @@
+# Dependency directories
+node_modules
+npm-debug.log
+
+# Build scripts & Configs
+tsconfig.json
+.eslintrc.js
+.prettierrc.js
+babel.config.js
+jest.config.js
+
+# Source Control
+.git
+.gitignore
+
+# System Files
+.DS_Store
+Thumbs.db
+
+# CI/CD & Editor Configs
+.github
+.vscode
+.idea
