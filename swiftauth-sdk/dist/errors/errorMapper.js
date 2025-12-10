@@ -3,11 +3,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.mapFirebaseError = void 0;
 const types_1 = require("../types");
 const mapFirebaseError = (error) => {
+    // Default fallback
     const fallbackError = {
         code: types_1.AuthErrorCode.UNKNOWN,
         message: 'An unexpected error occurred',
         originalError: error,
     };
+    // If it's not a Firebase error, return generic
     if (!error || typeof error.code !== 'string') {
         return {
             ...fallbackError,

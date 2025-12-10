@@ -9,9 +9,14 @@ import {
   Platform
 } from 'react-native';
 import { useAuth } from '../hooks/useAuth';
-import { AuthStatus } from '../types';
+import { AuthStatus, AuthScreenStyles } from '../types';
+import { PasswordInput } from './PasswordInput';
 
-export const LoginForm = () => {
+interface LoginFormProps {
+  styles?: AuthScreenStyles;
+}
+
+export const LoginForm = ({ styles: userStyles }: LoginFormProps) => {
   const {
     signInWithEmail,
     signInWithGoogle,
@@ -26,9 +31,7 @@ export const LoginForm = () => {
   const handleLogin = async () => {
     try {
       await signInWithEmail(email, password);
-    } catch (e) {
-      // Error is handled by context, but we catch here to prevent unhandled promise warnings
-    }
+    } catch (e) { }
   };
 
   const handleGoogleSignIn = async () => {
@@ -50,69 +53,87 @@ export const LoginForm = () => {
   const isLoading = status === AuthStatus.LOADING;
 
   return (
-    <View style={styles.container}>
-      {error && <Text style={styles.errorText}>{error.message}</Text>}
+    <View style={[defaultStyles.container, userStyles?.container]}>
+      {error && (
+        <Text style={[defaultStyles.errorText, userStyles?.errorText]}>
+          {error.message}
+        </Text>
+      )}
 
       {/* Email Input */}
       <TextInput
-        style={styles.input}
+        style={[defaultStyles.input, userStyles?.input]}
         placeholder="Email"
         value={email}
         onChangeText={setEmail}
         autoCapitalize="none"
         keyboardType="email-address"
+        placeholderTextColor="#999"
         editable={!isLoading}
       />
 
       {/* Password Input */}
-      <TextInput
-        style={styles.input}
+      <PasswordInput
+        styles={userStyles}
         placeholder="Password"
         value={password}
         onChangeText={setPassword}
-        secureTextEntry
         editable={!isLoading}
       />
 
-      {/* Email Sign In Button */}
+      {/* Sign In Button */}
       <TouchableOpacity
-        style={[styles.button, isLoading && styles.buttonDisabled]}
+        style={[
+          defaultStyles.button,
+          isLoading && defaultStyles.buttonDisabled,
+          userStyles?.button
+        ]}
         onPress={handleLogin}
         disabled={isLoading}
       >
         {isLoading ? (
-          <ActivityIndicator color="#fff" />
+          <ActivityIndicator color={userStyles?.loadingIndicatorColor || "#fff"} />
         ) : (
-          <Text style={styles.buttonText}>Sign In</Text>
+          <Text style={[defaultStyles.buttonText, userStyles?.buttonText]}>
+            Sign In
+          </Text>
         )}
       </TouchableOpacity>
 
       {/* OAuth Divider */}
-      <View style={styles.dividerContainer}>
-        <View style={styles.divider} />
-        <Text style={styles.dividerText}>OR</Text>
-        <View style={styles.divider} />
+      <View style={defaultStyles.dividerContainer}>
+        <View style={defaultStyles.divider} />
+        <Text style={defaultStyles.dividerText}>OR</Text>
+        <View style={defaultStyles.divider} />
       </View>
 
-      {/* Google Sign-In Button */}
+      {/* Google Button */}
       <TouchableOpacity
-        style={[styles.oauthButton, styles.googleButton, isLoading && styles.oauthButtonDisabled]}
+        style={[
+          defaultStyles.oauthButton,
+          defaultStyles.googleButton,
+          isLoading && defaultStyles.oauthButtonDisabled
+        ]}
         onPress={handleGoogleSignIn}
         disabled={isLoading}
       >
-        <Text style={styles.googleButtonText}>
+        <Text style={defaultStyles.googleButtonText}>
           {isLoading ? '...' : '🔍 Continue with Google'}
         </Text>
       </TouchableOpacity>
 
-      {/* Apple Sign-In Button (iOS Only) */}
+      {/* Apple Button (iOS Only) */}
       {Platform.OS === 'ios' && (
         <TouchableOpacity
-          style={[styles.oauthButton, styles.appleButton, isLoading && styles.oauthButtonDisabled]}
+          style={[
+            defaultStyles.oauthButton,
+            defaultStyles.appleButton,
+            isLoading && defaultStyles.oauthButtonDisabled
+          ]}
           onPress={handleAppleSignIn}
           disabled={isLoading}
         >
-          <Text style={styles.appleButtonText}>
+          <Text style={defaultStyles.appleButtonText}>
             {isLoading ? '...' : ' Continue with Apple'}
           </Text>
         </TouchableOpacity>
@@ -121,8 +142,9 @@ export const LoginForm = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const defaultStyles = StyleSheet.create({
   container: { width: '100%', marginVertical: 10 },
+
   input: {
     backgroundColor: '#f5f5f5',
     padding: 15,
@@ -130,7 +152,9 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     borderWidth: 1,
     borderColor: '#e0e0e0',
+    fontSize: 16,
   },
+
   button: {
     backgroundColor: '#007AFF',
     padding: 15,
@@ -142,23 +166,14 @@ const styles = StyleSheet.create({
   buttonText: { color: '#fff', fontWeight: '600', fontSize: 16 },
   errorText: { color: 'red', marginBottom: 12, fontSize: 14 },
 
-  // OAuth Styles
   dividerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     marginVertical: 20,
   },
-  divider: {
-    flex: 1,
-    height: 1,
-    backgroundColor: '#e0e0e0',
-  },
-  dividerText: {
-    marginHorizontal: 16,
-    color: '#666',
-    fontSize: 14,
-    fontWeight: '500',
-  },
+  divider: { flex: 1, height: 1, backgroundColor: '#e0e0e0' },
+  dividerText: { marginHorizontal: 16, color: '#666', fontSize: 14, fontWeight: '500' },
+
   oauthButton: {
     padding: 15,
     borderRadius: 8,
@@ -167,9 +182,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
   },
-  oauthButtonDisabled: {
-    opacity: 0.6,
-  },
+  oauthButtonDisabled: { opacity: 0.6 },
+
   googleButton: {
     backgroundColor: '#fff',
     borderWidth: 1,
@@ -180,9 +194,8 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '500',
   },
-  appleButton: {
-    backgroundColor: '#000',
-  },
+
+  appleButton: { backgroundColor: '#000' },
   appleButtonText: {
     color: '#fff',
     fontSize: 16,

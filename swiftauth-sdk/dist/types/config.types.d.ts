@@ -6,6 +6,7 @@ export interface AuthConfig {
     messagingSenderId?: string;
     appId?: string;
     persistence?: 'local' | 'memory';
+    persistence?: 'local' | 'memory';
     enableGoogle?: boolean;
     enableApple?: boolean;
     enableEmail?: boolean;

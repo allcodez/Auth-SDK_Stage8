@@ -1,2 +1,14 @@
 import React from 'react';
-export declare const AuthScreen: () => React.JSX.Element;
+import { AuthScreenStyles } from '../types';
+interface AuthScreenProps {
+    styles?: AuthScreenStyles;
+    titles?: {
+        loginTitle?: string;
+        loginSubtitle?: string;
+        signupTitle?: string;
+        signupSubtitle?: string;
+    };
+    showPasswordHints?: boolean;
+}
+export declare const AuthScreen: ({ styles: userStyles, titles, showPasswordHints }: AuthScreenProps) => React.JSX.Element;
+export {};

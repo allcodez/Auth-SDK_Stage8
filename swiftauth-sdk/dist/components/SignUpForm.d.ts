@@ -1,2 +1,8 @@
 import React from 'react';
-export declare const SignUpForm: () => React.JSX.Element;
+import { AuthScreenStyles } from '../types';
+interface SignUpFormProps {
+    styles?: AuthScreenStyles;
+    showHints?: boolean;
+}
+export declare const SignUpForm: ({ styles: userStyles, showHints }: SignUpFormProps) => React.JSX.Element;
+export {};
