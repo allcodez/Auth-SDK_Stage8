@@ -8,7 +8,7 @@ You can pass a `styles` object to `AuthScreen` to completely change its look. Th
 import { AuthScreen } from 'swiftauth-sdk';
 
 const DarkModeAuth = () => (
-  <AuthScreen 
+  <AuthScreen
     titles={{
       loginTitle: "Ninja Access",
       loginSubtitle: "Enter the shadow realm",
@@ -18,25 +18,25 @@ const DarkModeAuth = () => (
     styles={{
       // Main container
       container: { backgroundColor: '#1a1a1a' },
-      
+
       // Text Elements
       title: { color: '#ffffff', fontSize: 30, fontWeight: '800' },
       subtitle: { color: '#cccccc' },
-      
+
       // Form Fields
-      input: { 
-        backgroundColor: '#333333', 
-        color: '#ffffff', 
+      input: {
+        backgroundColor: '#333333',
+        color: '#ffffff',
         borderColor: '#555555',
         borderWidth: 1
       },
       inputContainer: { backgroundColor: '#333333', borderColor: '#555555' },
       eyeIcon: { color: '#ffffff' }, // The eye emoji/icon color
-      
+
       // Buttons
       button: { backgroundColor: '#FFD700', marginTop: 20 },
       buttonText: { color: '#000000', fontWeight: 'bold' },
-      
+
       // Footer Links
       footerText: { color: '#888888' },
       linkText: { color: '#FFD700' }
@@ -73,25 +73,25 @@ export const CustomLoginPage = () => {
           <Text style={{ color: 'red' }}>{error.message}</Text>
         </View>
       )}
-      
-      <TextInput 
-        placeholder="Email" 
-        value={email} 
+
+      <TextInput
+        placeholder="Email"
+        value={email}
         onChangeText={setEmail}
         style={{ borderWidth: 1, padding: 10, marginBottom: 10 }}
       />
-      
-      <TextInput 
-        placeholder="Password" 
-        value={pass} 
-        onChangeText={setPass} 
-        secureTextEntry 
+
+      <TextInput
+        placeholder="Password"
+        value={pass}
+        onChangeText={setPass}
+        secureTextEntry
         style={{ borderWidth: 1, padding: 10, marginBottom: 20 }}
       />
-      
-      <Button 
-        title="Login to SwiftAuth" 
-        onPress={() => signInWithEmail(email, pass)} 
+
+      <Button
+        title="Login to SwiftAuth"
+        onPress={() => signInWithEmail(email, pass)}
       />
     </View>
   );
@@ -107,12 +107,12 @@ const firebaseConfig = {
   // ... standard firebase keys ...
   apiKey: "...",
   authDomain: "...",
-  
+
   // Enable Google Feature
   enableGoogle: true,
-  
+
   // Required: Client ID from Google Cloud Console
-  // (Create a 'Web' client ID for Expo AuthSession)
+  // (Create a 'Web' client ID for RN Google Signin)
   googleWebClientId: "YOUR-CLIENT-ID.apps.googleusercontent.com",
 };
 
@@ -130,7 +130,7 @@ Standard behavior for most apps (Instagram, Twitter).
 ```tsx
 const config = {
   // ... keys ...
-  persistence: 'local' 
+  persistence: 'local'
 };
 ```
 
@@ -143,4 +143,37 @@ const config = {
   // ... keys ...
   persistence: 'memory'
 };
+```
+
+### 5. To enable Apple Sign-In, update your `firebaseConfig` object in `App.tsx`  (Optional, iOS only)
+
+```tsx
+const firebaseConfig = {
+  // ... standard firebase keys ...
+  apiKey: "...",
+  authDomain: "...",
+
+  // Required: Client ID from Google Cloud Console
+  // (Create your 'IOS' client ID for expo apple authentication)
+   googleIOSClientId: 'YOUR-CLIENT-ID.apps.googleusercontent.com',
+
+  // Enable Apple Sign-In
+  enableApple: true,
+};
+
+// ... pass this to <AuthProvider config={firebaseConfig}>
+```
+1. Go to your [Apple Developer Account](https://developer.apple.com/)
+2. Enable **Sign in with Apple** capability for your App ID
+3. For Bare React Native: Add the capability in Xcode: **Signing & Capabilities** > **+ Capability** > **Sign in with Apple**
+
+**Update `app.json` for Expo:**
+```json
+{
+  "expo": {
+    "ios": {
+      "usesAppleSignIn": true
+    }
+  }
+}
 ```
