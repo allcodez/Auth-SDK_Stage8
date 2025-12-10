@@ -10,8 +10,9 @@ import {
 } from 'react-native';
 
 import { useAuth } from '../hooks/useAuth';
-import { AuthStatus, AuthScreenStyles } from '../types';
+import { AuthScreenStyles } from '../types';
 import { PasswordInput } from './PasswordInput';
+import { validateEmail, validatePasswordSignup } from '../utils/validation';
 
 interface SignUpFormProps {
   styles?: AuthScreenStyles;
@@ -23,16 +24,19 @@ export const SignUpForm = ({ styles: userStyles, showHints = true }: SignUpFormP
     signUpWithEmail,
     signInWithGoogle,
     signInWithApple,
-    status,
-    error
+    isLoading, // ✅ Use boolean loading state
+    error,
+    config // ✅ Use config for conditional rendering
   } = useAuth();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [validationError, setValidationError] = useState<string | null>(null);
+  
+  // ✅ Proper Validation State
+  const [validationErrors, setValidationErrors] = useState<{ email?: string; password?: string; confirm?: string }>({});
 
-  // Password Requirements Logic
+  // Password Requirements Logic for Visual Hints
   const requirements = [
     { label: "At least 6 characters", met: password.length >= 6 },
     { label: "Contains a number", met: /\d/.test(password) },
@@ -40,20 +44,34 @@ export const SignUpForm = ({ styles: userStyles, showHints = true }: SignUpFormP
   ];
 
   const handleSignUp = async () => {
+    // 1. Reset Errors
+    setValidationErrors({});
+
+    // 2. Validate Inputs
+    const emailErr = validateEmail(email);
+    const passErr = validatePasswordSignup(password);
+    
+    let confirmErr;
     if (password !== confirmPassword) {
-      setValidationError("Passwords do not match.");
-      return;
+      confirmErr = "Passwords do not match.";
     }
-    if (password.length < 6) {
-      setValidationError("Password is too short.");
+
+    // 3. Check if any errors exist
+    if (emailErr || passErr || confirmErr) {
+      setValidationErrors({
+        email: emailErr || undefined,
+        password: passErr || undefined,
+        confirm: confirmErr || undefined
+      });
       return;
     }
 
-    setValidationError(null);
-
+    // 4. Attempt Sign Up
     try {
       await signUpWithEmail(email, password);
-    } catch (e) {}
+    } catch (e) {
+      // Global error handled by useAuth
+    }
   };
 
   const handleGoogleSignIn = async () => {
@@ -72,45 +90,68 @@ export const SignUpForm = ({ styles: userStyles, showHints = true }: SignUpFormP
     }
   };
 
-  const isLoading = status === AuthStatus.LOADING;
-  const displayError = validationError || (error ? error.message : null);
-
   return (
     <View style={[defaultStyles.container, userStyles?.container]}>
-      {displayError && (
-        <Text style={[defaultStyles.errorText, userStyles?.errorText]}>
-          {displayError}
+      {/* Global API Error */}
+      {error && (
+        <Text style={[defaultStyles.globalError, userStyles?.errorText]}>
+          {error.message}
         </Text>
       )}
 
-      {/* Email */}
+      {/* Email Input */}
       <TextInput
-        style={[defaultStyles.input, userStyles?.input]}
+        style={[
+          defaultStyles.input, 
+          userStyles?.input,
+          validationErrors.email ? { borderColor: 'red' } : {}
+        ]}
         placeholder="Email"
         value={email}
-        onChangeText={setEmail}
+        onChangeText={(text) => {
+          setEmail(text);
+          if (validationErrors.email) setValidationErrors({...validationErrors, email: undefined});
+        }}
         autoCapitalize="none"
         keyboardType="email-address"
         placeholderTextColor="#999"
+        editable={!isLoading}
       />
+      {validationErrors.email && (
+        <Text style={defaultStyles.validationText}>{validationErrors.email}</Text>
+      )}
 
-      {/* Password */}
+      {/* Password Input */}
       <PasswordInput
         styles={userStyles}
         placeholder="Password"
         value={password}
-        onChangeText={setPassword}
+        onChangeText={(text) => {
+          setPassword(text);
+          if (validationErrors.password) setValidationErrors({...validationErrors, password: undefined});
+        }}
+        editable={!isLoading}
       />
+      {validationErrors.password && (
+        <Text style={defaultStyles.validationText}>{validationErrors.password}</Text>
+      )}
 
-      {/* Confirm Password */}
+      {/* Confirm Password Input */}
       <PasswordInput
         styles={userStyles}
         placeholder="Confirm Password"
         value={confirmPassword}
-        onChangeText={setConfirmPassword}
+        onChangeText={(text) => {
+          setConfirmPassword(text);
+          if (validationErrors.confirm) setValidationErrors({...validationErrors, confirm: undefined});
+        }}
+        editable={!isLoading}
       />
+      {validationErrors.confirm && (
+        <Text style={defaultStyles.validationText}>{validationErrors.confirm}</Text>
+      )}
 
-      {/* Password Requirements */}
+      {/* Password Hints Checklist */}
       {showHints && password.length > 0 && (
         <View style={[defaultStyles.hintContainer, userStyles?.hintContainer]}>
           {requirements.map((req, index) => (
@@ -132,7 +173,7 @@ export const SignUpForm = ({ styles: userStyles, showHints = true }: SignUpFormP
         </View>
       )}
 
-      {/* Create Account */}
+      {/* Create Account Button */}
       <TouchableOpacity
         style={[
           defaultStyles.button,
@@ -151,35 +192,39 @@ export const SignUpForm = ({ styles: userStyles, showHints = true }: SignUpFormP
         )}
       </TouchableOpacity>
 
-      {/* Divider */}
-      <View style={defaultStyles.dividerContainer}>
-        <View style={defaultStyles.divider} />
-        <Text style={defaultStyles.dividerText}>OR</Text>
-        <View style={defaultStyles.divider} />
-      </View>
+      {/* OAuth Section - Conditional Rendering */}
+      {(config.enableGoogle || config.enableApple) && !isLoading && (
+        <>
+          <View style={defaultStyles.dividerContainer}>
+            <View style={defaultStyles.divider} />
+            <Text style={defaultStyles.dividerText}>OR</Text>
+            <View style={defaultStyles.divider} />
+          </View>
 
-      {/* Google */}
-      <TouchableOpacity
-        style={[defaultStyles.oauthButton, defaultStyles.googleButton]}
-        onPress={handleGoogleSignIn}
-        disabled={isLoading}
-      >
-        <Text style={defaultStyles.googleButtonText}>
-          {isLoading ? '...' : '🔍 Sign up with Google'}
-        </Text>
-      </TouchableOpacity>
+          {/* Google */}
+          {config.enableGoogle && (
+            <TouchableOpacity
+              style={[defaultStyles.oauthButton, defaultStyles.googleButton]}
+              onPress={handleGoogleSignIn}
+            >
+              <Text style={defaultStyles.googleButtonText}>
+                Sign up with Google
+              </Text>
+            </TouchableOpacity>
+          )}
 
-      {/* Apple */}
-      {Platform.OS === 'ios' && (
-        <TouchableOpacity
-          style={[defaultStyles.oauthButton, defaultStyles.appleButton]}
-          onPress={handleAppleSignIn}
-          disabled={isLoading}
-        >
-          <Text style={defaultStyles.appleButtonText}>
-            {isLoading ? '...' : 'Sign up with Apple'}
-          </Text>
-        </TouchableOpacity>
+          {/* Apple */}
+          {config.enableApple && Platform.OS === 'ios' && (
+            <TouchableOpacity
+              style={[defaultStyles.oauthButton, defaultStyles.appleButton]}
+              onPress={handleAppleSignIn}
+            >
+              <Text style={defaultStyles.appleButtonText}>
+                Sign up with Apple
+              </Text>
+            </TouchableOpacity>
+          )}
+        </>
       )}
     </View>
   );
@@ -192,7 +237,7 @@ const defaultStyles = StyleSheet.create({
     backgroundColor: '#f5f5f5',
     padding: 15,
     borderRadius: 8,
-    marginBottom: 12,
+    marginBottom: 8, // Reduced for validation text space
     borderWidth: 1,
     borderColor: '#e0e0e0',
     fontSize: 16,
@@ -210,7 +255,8 @@ const defaultStyles = StyleSheet.create({
 
   buttonText: { color: '#fff', fontWeight: '600', fontSize: 16 },
 
-  errorText: { color: 'red', marginBottom: 12, fontSize: 14 },
+  globalError: { color: 'red', marginBottom: 12, fontSize: 14, textAlign: 'center' },
+  validationText: { color: 'red', fontSize: 12, marginBottom: 10, marginLeft: 4, marginTop: -4 },
 
   // OAuth Styles
   dividerContainer: {

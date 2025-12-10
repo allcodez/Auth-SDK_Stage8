@@ -60,6 +60,8 @@ const AuthProvider = ({ config, children }) => {
     const [status, setStatus] = (0, react_1.useState)(types_1.AuthStatus.LOADING);
     const [error, setError] = (0, react_1.useState)(null);
     const [firebaseAuthInstance, setFirebaseAuthInstance] = (0, react_1.useState)(null);
+    // ✅ NEW: Explicit loading state for initial app load vs action loading
+    const [isDataLoading, setIsDataLoading] = (0, react_1.useState)(true);
     (0, react_1.useEffect)(() => {
         let app;
         let auth;
@@ -102,31 +104,49 @@ const AuthProvider = ({ config, children }) => {
             }
         }
         const unsubscribe = (0, auth_1.onAuthStateChanged)(auth, async (fbUser) => {
-            if (fbUser) {
-                try {
-                    const token = await fbUser.getIdToken();
-                    setUser({
-                        uid: fbUser.uid,
-                        email: fbUser.email,
-                        displayName: fbUser.displayName,
-                        photoURL: fbUser.photoURL,
-                        emailVerified: fbUser.emailVerified,
-                        token: token
-                    });
-                    setStatus(types_1.AuthStatus.AUTHENTICATED);
+            try {
+                if (fbUser) {
+                    try {
+                        // Force token refresh to ensure validity on load
+                        const token = await fbUser.getIdToken(true);
+                        setUser({
+                            uid: fbUser.uid,
+                            email: fbUser.email,
+                            displayName: fbUser.displayName,
+                            photoURL: fbUser.photoURL,
+                            emailVerified: fbUser.emailVerified,
+                            token: token
+                        });
+                        setStatus(types_1.AuthStatus.AUTHENTICATED);
+                    }
+                    catch (tokenError) {
+                        console.error('Token retrieval error:', tokenError);
+                        if (tokenError.code === 'auth/user-token-expired' || tokenError.code === 'auth/null-user') {
+                            setStatus(types_1.AuthStatus.TOKEN_EXPIRED);
+                        }
+                        else {
+                            setStatus(types_1.AuthStatus.UNAUTHENTICATED);
+                        }
+                        setUser(null);
+                    }
                 }
-                catch (tokenError) {
-                    console.error('Token retrieval error:', tokenError);
-                    setStatus(types_1.AuthStatus.TOKEN_EXPIRED);
+                else {
+                    setUser(null);
+                    setStatus(types_1.AuthStatus.UNAUTHENTICATED);
                 }
             }
-            else {
-                setUser(null);
+            catch (err) {
+                console.error("Auth State Error:", err);
                 setStatus(types_1.AuthStatus.UNAUTHENTICATED);
+            }
+            finally {
+                // ✅ Stop initial loading spinner once Firebase has checked storage
+                setIsDataLoading(false);
             }
         }, (err) => {
             console.error("Auth State Error:", err);
             setStatus(types_1.AuthStatus.UNAUTHENTICATED);
+            setIsDataLoading(false);
         });
         return () => unsubscribe();
     }, [config]);
@@ -178,24 +198,18 @@ const AuthProvider = ({ config, children }) => {
         try {
             setError(null);
             setStatus(types_1.AuthStatus.LOADING);
-            // Check if Google Play Services are available (Android)
             await google_signin_1.GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
-            // Get user info and ID token
             const userInfo = await google_signin_1.GoogleSignin.signIn();
-            // Extract ID token
             const idToken = userInfo.data?.idToken;
             if (!idToken) {
                 throw new Error('No ID token received from Google Sign-In');
             }
-            // Create Firebase credential
             const credential = auth_1.GoogleAuthProvider.credential(idToken);
-            // Sign in to Firebase
             await (0, auth_1.signInWithCredential)(firebaseAuthInstance, credential);
             console.log('✅ Google Sign-In successful');
         }
         catch (err) {
             console.error('❌ Google Sign-In Error:', err);
-            // Handle specific Google Sign-In errors
             let mappedError;
             if (err.code === 'SIGN_IN_CANCELLED') {
                 mappedError = {
@@ -203,8 +217,8 @@ const AuthProvider = ({ config, children }) => {
                     message: 'Google Sign-In was cancelled',
                     originalError: err
                 };
+                // Reset status if cancelled, don't leave it loading
                 setStatus(types_1.AuthStatus.UNAUTHENTICATED);
-                // Don't throw for cancellation
                 return;
             }
             else if (err.code === 'IN_PROGRESS') {
@@ -234,7 +248,6 @@ const AuthProvider = ({ config, children }) => {
         if (!firebaseAuthInstance) {
             throw new Error('Firebase not initialized');
         }
-        // Check if Apple Sign-In is available (iOS 13+)
         if (react_native_1.Platform.OS !== 'ios') {
             const platformError = {
                 code: types_1.AuthErrorCode.APPLE_SIGN_IN_NOT_SUPPORTED,
@@ -255,10 +268,8 @@ const AuthProvider = ({ config, children }) => {
         try {
             setError(null);
             setStatus(types_1.AuthStatus.LOADING);
-            // Generate nonce for security
             const nonce = Math.random().toString(36).substring(2, 10);
             const hashedNonce = await Crypto.digestStringAsync(Crypto.CryptoDigestAlgorithm.SHA256, nonce);
-            // Request Apple credentials
             const appleCredential = await AppleAuthentication.signInAsync({
                 requestedScopes: [
                     AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
@@ -270,19 +281,16 @@ const AuthProvider = ({ config, children }) => {
             if (!identityToken) {
                 throw new Error('No identity token received from Apple');
             }
-            // Create Firebase credential
             const provider = new auth_1.OAuthProvider('apple.com');
             const credential = provider.credential({
                 idToken: identityToken,
                 rawNonce: nonce,
             });
-            // Sign in to Firebase
             await (0, auth_1.signInWithCredential)(firebaseAuthInstance, credential);
             console.log('✅ Apple Sign-In successful');
         }
         catch (err) {
             console.error('❌ Apple Sign-In Error:', err);
-            // Handle user cancellation gracefully
             if (err.code === 'ERR_REQUEST_CANCELED') {
                 const cancelError = {
                     code: types_1.AuthErrorCode.APPLE_SIGN_IN_CANCELLED,
@@ -291,7 +299,6 @@ const AuthProvider = ({ config, children }) => {
                 };
                 setError(cancelError);
                 setStatus(types_1.AuthStatus.UNAUTHENTICATED);
-                // Don't throw for cancellation
                 return;
             }
             const mappedError = (0, errors_1.mapFirebaseError)(err);
@@ -303,18 +310,14 @@ const AuthProvider = ({ config, children }) => {
     // Sign Out
     const signOut = async () => {
         try {
-            // Sign out from Firebase
             if (firebaseAuthInstance) {
                 await firebaseAuthInstance.signOut();
             }
-            // Sign out from Google if enabled
-            // GoogleSignin.signOut() is safe to call even if user wasn't signed in with Google
             if (config.enableGoogle) {
                 try {
                     await google_signin_1.GoogleSignin.signOut();
                 }
                 catch (googleSignOutError) {
-                    // Ignore Google sign-out errors (user might not have been signed in with Google)
                     console.log('Google sign-out skipped or failed:', googleSignOutError);
                 }
             }
@@ -322,24 +325,26 @@ const AuthProvider = ({ config, children }) => {
         }
         catch (err) {
             console.error('❌ Sign out error:', err);
-            // Still set user to null even if sign out fails
             setUser(null);
             setStatus(types_1.AuthStatus.UNAUTHENTICATED);
         }
     };
-    // Clear Error
     const clearError = () => setError(null);
     const value = (0, react_1.useMemo)(() => ({
         user,
         status,
+        // ✅ NEW: Combine internal loading with AuthStatus
+        isLoading: isDataLoading || status === types_1.AuthStatus.LOADING,
         error,
+        // ✅ NEW: Expose config for UI to read
+        config,
         signInWithEmail,
         signUpWithEmail,
         signInWithGoogle,
         signInWithApple,
         signOut,
         clearError
-    }), [user, status, error, firebaseAuthInstance]);
+    }), [user, status, isDataLoading, error, config, firebaseAuthInstance]);
     return (react_1.default.createElement(AuthContext_1.AuthContext.Provider, { value: value }, children));
 };
 exports.AuthProvider = AuthProvider;
