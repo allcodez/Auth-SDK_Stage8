@@ -9,8 +9,9 @@ import {
   Platform
 } from 'react-native';
 import { useAuth } from '../hooks/useAuth';
-import { AuthStatus, AuthScreenStyles } from '../types';
+import { AuthScreenStyles } from '../types';
 import { PasswordInput } from './PasswordInput';
+import { validateEmail, validatePasswordLogin } from '../utils/validation';
 
 interface LoginFormProps {
   styles?: AuthScreenStyles;
@@ -21,17 +22,39 @@ export const LoginForm = ({ styles: userStyles }: LoginFormProps) => {
     signInWithEmail,
     signInWithGoogle,
     signInWithApple,
-    status,
-    error
+    isLoading, // ✅ Using the simplified boolean we added to context
+    error,
+    config // ✅ We need this to check if social buttons are enabled
   } = useAuth();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  
+  // ✅ Validation Error State
+  const [validationErrors, setValidationErrors] = useState<{ email?: string; password?: string }>({});
 
   const handleLogin = async () => {
+    // 1. Reset previous errors
+    setValidationErrors({});
+
+    // 2. Validate Inputs
+    const emailErr = validateEmail(email);
+    const passErr = validatePasswordLogin(password);
+
+    if (emailErr || passErr) {
+      setValidationErrors({
+        email: emailErr || undefined,
+        password: passErr || undefined
+      });
+      return; // 🛑 Stop if invalid
+    }
+
+    // 3. Attempt Login
     try {
       await signInWithEmail(email, password);
-    } catch (e) { }
+    } catch (e) { 
+      // Auth errors handled by global state
+    }
   };
 
   const handleGoogleSignIn = async () => {
@@ -50,10 +73,9 @@ export const LoginForm = ({ styles: userStyles }: LoginFormProps) => {
     }
   };
 
-  const isLoading = status === AuthStatus.LOADING;
-
   return (
     <View style={[defaultStyles.container, userStyles?.container]}>
+      {/* Global API Error */}
       {error && (
         <Text style={[defaultStyles.errorText, userStyles?.errorText]}>
           {error.message}
@@ -62,24 +84,41 @@ export const LoginForm = ({ styles: userStyles }: LoginFormProps) => {
 
       {/* Email Input */}
       <TextInput
-        style={[defaultStyles.input, userStyles?.input]}
+        style={[
+          defaultStyles.input, 
+          userStyles?.input,
+          validationErrors.email ? { borderColor: 'red' } : {} // Highlight on error
+        ]}
         placeholder="Email"
         value={email}
-        onChangeText={setEmail}
+        onChangeText={(text) => {
+          setEmail(text);
+          if (validationErrors.email) setValidationErrors({...validationErrors, email: undefined});
+        }}
         autoCapitalize="none"
         keyboardType="email-address"
         placeholderTextColor="#999"
         editable={!isLoading}
       />
+      {/* Validation Message */}
+      {validationErrors.email && (
+        <Text style={defaultStyles.validationText}>{validationErrors.email}</Text>
+      )}
 
       {/* Password Input */}
       <PasswordInput
         styles={userStyles}
         placeholder="Password"
         value={password}
-        onChangeText={setPassword}
+        onChangeText={(text) => {
+          setPassword(text);
+          if (validationErrors.password) setValidationErrors({...validationErrors, password: undefined});
+        }}
         editable={!isLoading}
       />
+      {validationErrors.password && (
+        <Text style={defaultStyles.validationText}>{validationErrors.password}</Text>
+      )}
 
       {/* Sign In Button */}
       <TouchableOpacity
@@ -100,43 +139,45 @@ export const LoginForm = ({ styles: userStyles }: LoginFormProps) => {
         )}
       </TouchableOpacity>
 
-      {/* OAuth Divider */}
-      <View style={defaultStyles.dividerContainer}>
-        <View style={defaultStyles.divider} />
-        <Text style={defaultStyles.dividerText}>OR</Text>
-        <View style={defaultStyles.divider} />
-      </View>
+      {/* OAuth Section - Conditionally Rendered based on Config */}
+      {(config.enableGoogle || config.enableApple) && !isLoading && (
+        <>
+          <View style={defaultStyles.dividerContainer}>
+            <View style={defaultStyles.divider} />
+            <Text style={defaultStyles.dividerText}>OR</Text>
+            <View style={defaultStyles.divider} />
+          </View>
 
-      {/* Google Button */}
-      <TouchableOpacity
-        style={[
-          defaultStyles.oauthButton,
-          defaultStyles.googleButton,
-          isLoading && defaultStyles.oauthButtonDisabled
-        ]}
-        onPress={handleGoogleSignIn}
-        disabled={isLoading}
-      >
-        <Text style={defaultStyles.googleButtonText}>
-          {isLoading ? '...' : '🔍 Continue with Google'}
-        </Text>
-      </TouchableOpacity>
+          {/* Google Button */}
+          {config.enableGoogle && (
+            <TouchableOpacity
+              style={[
+                defaultStyles.oauthButton,
+                defaultStyles.googleButton,
+              ]}
+              onPress={handleGoogleSignIn}
+            >
+              <Text style={defaultStyles.googleButtonText}>
+                Continue with Google
+              </Text>
+            </TouchableOpacity>
+          )}
 
-      {/* Apple Button (iOS Only) */}
-      {Platform.OS === 'ios' && (
-        <TouchableOpacity
-          style={[
-            defaultStyles.oauthButton,
-            defaultStyles.appleButton,
-            isLoading && defaultStyles.oauthButtonDisabled
-          ]}
-          onPress={handleAppleSignIn}
-          disabled={isLoading}
-        >
-          <Text style={defaultStyles.appleButtonText}>
-            {isLoading ? '...' : ' Continue with Apple'}
-          </Text>
-        </TouchableOpacity>
+          {/* Apple Button (iOS Only) */}
+          {config.enableApple && Platform.OS === 'ios' && (
+            <TouchableOpacity
+              style={[
+                defaultStyles.oauthButton,
+                defaultStyles.appleButton,
+              ]}
+              onPress={handleAppleSignIn}
+            >
+              <Text style={defaultStyles.appleButtonText}>
+                Continue with Apple
+              </Text>
+            </TouchableOpacity>
+          )}
+        </>
       )}
     </View>
   );
@@ -149,7 +190,7 @@ const defaultStyles = StyleSheet.create({
     backgroundColor: '#f5f5f5',
     padding: 15,
     borderRadius: 8,
-    marginBottom: 12,
+    marginBottom: 8, // Reduced slightly to make room for validation text
     borderWidth: 1,
     borderColor: '#e0e0e0',
     fontSize: 16,
@@ -164,7 +205,9 @@ const defaultStyles = StyleSheet.create({
   },
   buttonDisabled: { backgroundColor: '#a0cfff' },
   buttonText: { color: '#fff', fontWeight: '600', fontSize: 16 },
-  errorText: { color: 'red', marginBottom: 12, fontSize: 14 },
+  
+  errorText: { color: 'red', marginBottom: 12, fontSize: 14, textAlign: 'center' },
+  validationText: { color: 'red', fontSize: 12, marginBottom: 10, marginLeft: 4, marginTop: -4 },
 
   dividerContainer: {
     flexDirection: 'row',
@@ -182,7 +225,6 @@ const defaultStyles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
   },
-  oauthButtonDisabled: { opacity: 0.6 },
 
   googleButton: {
     backgroundColor: '#fff',
