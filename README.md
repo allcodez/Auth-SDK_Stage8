@@ -487,6 +487,104 @@ const config = {
 
 ---
 
+## 🔌 Connecting to a Custom Backend
+
+The SwiftAuth SDK handles the complexity of authentication (Google, Apple, Email), but you likely have your own API for user data.
+
+The SDK exposes a secure Firebase ID Token (`user.token`) that you can send to your backend to identify the user.
+
+### 1. Frontend: Sending the Token
+
+In your React Native app, access the token from the `useAuth` hook and include it in the `Authorization` header of your API requests.
+
+```typescript
+import { useAuth } from 'rn-swiftauth-sdk';
+
+const UserProfile = () => {
+  const { user } = useAuth();
+
+  const fetchPrivateData = async () => {
+    if (!user?.token) return;
+
+    try {
+      const response = await fetch('https://your-api.com/profile', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          // Send the token as a Bearer token
+          'Authorization': `Bearer ${user.token}`
+        }
+      });
+
+      const data = await response.json();
+      console.log('Secure Data:', data);
+    } catch (error) {
+      console.error('Request failed:', error);
+    }
+  };
+
+  return <Button title="Get Profile" onPress={fetchPrivateData} />;
+};
+```
+
+### 2. Backend: Verifying the Token
+
+Your backend must verify this token to ensure the request is legitimate. You can use the Firebase Admin SDK for this.
+
+**Example (Node.js / Express):**
+
+```javascript
+const admin = require('firebase-admin');
+const express = require('express');
+const app = express();
+
+// 1. Initialize Firebase Admin with your Service Account
+const serviceAccount = require('./path/to/serviceAccountKey.json');
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount)
+});
+
+// 2. Middleware to Verify Token
+const verifyToken = async (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).send('Unauthorized');
+  }
+
+  const idToken = authHeader.split('Bearer ')[1];
+
+  try {
+    // Decodes the token and checks signature
+    const decodedToken = await admin.auth().verifyIdToken(idToken);
+    
+    // Attach user info to request (uid, email, etc.)
+    req.user = decodedToken; 
+    next();
+  } catch (error) {
+    res.status(403).send('Invalid Token');
+  }
+};
+
+// 3. Protect Routes
+app.get('/profile', verifyToken, (req, res) => {
+  // Access user info securely
+  res.json({ message: `Hello ${req.user.email}, here is your private data.` });
+});
+```
+
+### Supported Backends
+
+This pattern works with any backend language that has a Firebase Admin SDK, including:
+
+- Node.js
+- Python
+- Go
+- Java
+- .NET
+
+---
+
 ## 🧪 Example App
 
 Check out our example implementation:
