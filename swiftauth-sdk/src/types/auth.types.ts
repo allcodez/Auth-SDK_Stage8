@@ -1,5 +1,6 @@
 // src/types/auth.types.ts
 import { AuthError } from './error.types';
+import { AuthConfig } from './config.types'; // Import config type
 
 // The specific states requested in the task
 export enum AuthStatus {
@@ -21,8 +22,15 @@ export interface User {
 export interface AuthContextType {
   user: User | null;
   status: AuthStatus;
+  
+  // ✅ NEW: Explicit loading state for easier UI handling
+  isLoading: boolean; 
+  
   error: AuthError | null;
   
+  // ✅ NEW: Expose config so UI components can check feature flags (e.g. enableGoogle)
+  config: AuthConfig;
+
   // Actions
   signInWithEmail: (email: string, pass: string) => Promise<void>;
   signUpWithEmail: (email: string, pass: string) => Promise<void>;
