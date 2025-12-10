@@ -1,15 +1,13 @@
 // swiftauth-example/App.tsx
 import React from 'react';
 import { View, Text, Button, StyleSheet } from 'react-native';
-// Import the new component
 import { AuthProvider, AuthScreen, useAuth } from 'swiftauth-sdk';
 import { firebaseConfig } from './firebaseConfig';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-// A wrapper to handle the "Authenticated" state
+
 const AppContent = () => {
   const { user, signOut } = useAuth();
 
-  // If user is logged in, show their profile
   if (user) {
     return (
       <View style={styles.center}>
@@ -19,16 +17,24 @@ const AppContent = () => {
     );
   }
 
-  // If not logged in, show the Plug-and-Play Auth Screen
   return <AuthScreen />;
 };
 
 export default function App() {
   return (
-  <SafeAreaProvider>
-      <AuthProvider config={firebaseConfig}>
-          <AppContent />
-        </AuthProvider>
+    <SafeAreaProvider>
+      <AuthProvider
+        config={{
+          ...firebaseConfig,
+          ui: {
+            enableGoogleAuth: false,
+            enableAppleAuth: false,
+            enableEmailAuth: true,
+          }
+        }}
+      >
+        <AppContent />
+      </AuthProvider>
     </SafeAreaProvider>
   );
 }
