@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, StatusBar } from 'react-native';
-import { AuthProvider } from 'swiftauth-sdk';
+import { AuthProvider } from 'rn-swiftauth-sdk';
 import { firebaseConfig } from './firebaseConfig';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Ionicons, Feather } from '@expo/vector-icons';

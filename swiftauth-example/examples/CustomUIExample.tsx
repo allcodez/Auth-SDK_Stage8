@@ -11,7 +11,7 @@ import {
   ScrollView,
   Image,
 } from 'react-native';
-import { useAuth, AuthStatus } from 'swiftauth-sdk';
+import { useAuth, AuthStatus } from 'rn-swiftauth-sdk';
 import { Ionicons, Feather } from '@expo/vector-icons';
 
 interface Props {

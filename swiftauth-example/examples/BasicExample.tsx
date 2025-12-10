@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
-import { AuthScreen, useAuth } from 'swiftauth-sdk';
+import { AuthScreen, useAuth } from 'rn-swiftauth-sdk';
 import { Ionicons } from '@expo/vector-icons';
 
 interface Props {
