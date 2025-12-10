@@ -5,8 +5,11 @@ export interface AuthConfig {
     storageBucket?: string;
     messagingSenderId?: string;
     appId?: string;
+    persistence?: 'local' | 'memory';
     enableGoogle?: boolean;
     enableApple?: boolean;
     enableEmail?: boolean;
+    googleWebClientId?: string;
+    googleIOSClientId?: string;
 }
 export declare const DEFAULT_AUTH_CONFIG: Partial<AuthConfig>;

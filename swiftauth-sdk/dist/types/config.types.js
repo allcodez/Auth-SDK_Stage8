@@ -5,4 +5,5 @@ exports.DEFAULT_AUTH_CONFIG = {
     enableGoogle: false,
     enableApple: false,
     enableEmail: true,
+    persistence: 'local',
 };

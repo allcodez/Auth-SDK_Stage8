@@ -10,7 +10,18 @@ export enum AuthErrorCode {
   UNKNOWN = 'auth/unknown',
   // Specific to SDK flow
   CONFIG_ERROR = 'auth/configuration-error',
-  CANCELLED = 'auth/cancelled' 
+  CANCELLED = 'auth/cancelled',
+
+  // Google Sign-In Errors
+  GOOGLE_SIGN_IN_CANCELLED = 'GOOGLE_SIGN_IN_CANCELLED',
+  GOOGLE_SIGN_IN_IN_PROGRESS = 'GOOGLE_SIGN_IN_IN_PROGRESS',
+  GOOGLE_PLAY_SERVICES_NOT_AVAILABLE = 'GOOGLE_PLAY_SERVICES_NOT_AVAILABLE',
+  GOOGLE_SIGN_IN_FAILED = 'GOOGLE_SIGN_IN_FAILED',
+
+  // Apple Sign-In Errors
+  APPLE_SIGN_IN_CANCELLED = 'APPLE_SIGN_IN_CANCELLED',
+  APPLE_SIGN_IN_FAILED = 'APPLE_SIGN_IN_FAILED',
+  APPLE_SIGN_IN_NOT_SUPPORTED = 'APPLE_SIGN_IN_NOT_SUPPORTED',
 }
 
 export interface AuthError {

@@ -39,7 +39,7 @@ const react_native_1 = require("react-native");
 const useAuth_1 = require("../hooks/useAuth");
 const types_1 = require("../types");
 const LoginForm = () => {
-    const { signInWithEmail, status, error } = (0, useAuth_1.useAuth)();
+    const { signInWithEmail, signInWithGoogle, signInWithApple, status, error } = (0, useAuth_1.useAuth)();
     const [email, setEmail] = (0, react_1.useState)('');
     const [password, setPassword] = (0, react_1.useState)('');
     const handleLogin = async () => {
@@ -49,12 +49,36 @@ const LoginForm = () => {
         catch (e) {
         }
     };
+    const handleGoogleSignIn = async () => {
+        try {
+            await signInWithGoogle();
+        }
+        catch (e) {
+            console.error('Google Sign-In Error:', e);
+        }
+    };
+    const handleAppleSignIn = async () => {
+        try {
+            await signInWithApple();
+        }
+        catch (e) {
+            console.error('Apple Sign-In Error:', e);
+        }
+    };
     const isLoading = status === types_1.AuthStatus.LOADING;
     return (react_1.default.createElement(react_native_1.View, { style: styles.container },
         error && react_1.default.createElement(react_native_1.Text, { style: styles.errorText }, error.message),
-        react_1.default.createElement(react_native_1.TextInput, { style: styles.input, placeholder: "Email", value: email, onChangeText: setEmail, autoCapitalize: "none", keyboardType: "email-address" }),
-        react_1.default.createElement(react_native_1.TextInput, { style: styles.input, placeholder: "Password", value: password, onChangeText: setPassword, secureTextEntry: true }),
-        react_1.default.createElement(react_native_1.TouchableOpacity, { style: [styles.button, isLoading && styles.buttonDisabled], onPress: handleLogin, disabled: isLoading }, isLoading ? (react_1.default.createElement(react_native_1.ActivityIndicator, { color: "#fff" })) : (react_1.default.createElement(react_native_1.Text, { style: styles.buttonText }, "Sign In")))));
+        react_1.default.createElement(react_native_1.TextInput, { style: styles.input, placeholder: "Email", value: email, onChangeText: setEmail, autoCapitalize: "none", keyboardType: "email-address", editable: !isLoading }),
+        react_1.default.createElement(react_native_1.TextInput, { style: styles.input, placeholder: "Password", value: password, onChangeText: setPassword, secureTextEntry: true, editable: !isLoading }),
+        react_1.default.createElement(react_native_1.TouchableOpacity, { style: [styles.button, isLoading && styles.buttonDisabled], onPress: handleLogin, disabled: isLoading }, isLoading ? (react_1.default.createElement(react_native_1.ActivityIndicator, { color: "#fff" })) : (react_1.default.createElement(react_native_1.Text, { style: styles.buttonText }, "Sign In"))),
+        react_1.default.createElement(react_native_1.View, { style: styles.dividerContainer },
+            react_1.default.createElement(react_native_1.View, { style: styles.divider }),
+            react_1.default.createElement(react_native_1.Text, { style: styles.dividerText }, "OR"),
+            react_1.default.createElement(react_native_1.View, { style: styles.divider })),
+        react_1.default.createElement(react_native_1.TouchableOpacity, { style: [styles.oauthButton, styles.googleButton, isLoading && styles.oauthButtonDisabled], onPress: handleGoogleSignIn, disabled: isLoading },
+            react_1.default.createElement(react_native_1.Text, { style: styles.googleButtonText }, isLoading ? '...' : '🔍 Continue with Google')),
+        react_native_1.Platform.OS === 'ios' && (react_1.default.createElement(react_native_1.TouchableOpacity, { style: [styles.oauthButton, styles.appleButton, isLoading && styles.oauthButtonDisabled], onPress: handleAppleSignIn, disabled: isLoading },
+            react_1.default.createElement(react_native_1.Text, { style: styles.appleButtonText }, isLoading ? '...' : ' Continue with Apple')))));
 };
 exports.LoginForm = LoginForm;
 const styles = react_native_1.StyleSheet.create({
@@ -77,4 +101,49 @@ const styles = react_native_1.StyleSheet.create({
     buttonDisabled: { backgroundColor: '#a0cfff' },
     buttonText: { color: '#fff', fontWeight: '600', fontSize: 16 },
     errorText: { color: 'red', marginBottom: 12, fontSize: 14 },
+    dividerContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginVertical: 20,
+    },
+    divider: {
+        flex: 1,
+        height: 1,
+        backgroundColor: '#e0e0e0',
+    },
+    dividerText: {
+        marginHorizontal: 16,
+        color: '#666',
+        fontSize: 14,
+        fontWeight: '500',
+    },
+    oauthButton: {
+        padding: 15,
+        borderRadius: 8,
+        alignItems: 'center',
+        marginBottom: 10,
+        flexDirection: 'row',
+        justifyContent: 'center',
+    },
+    oauthButtonDisabled: {
+        opacity: 0.6,
+    },
+    googleButton: {
+        backgroundColor: '#fff',
+        borderWidth: 1,
+        borderColor: '#e0e0e0',
+    },
+    googleButtonText: {
+        color: '#000',
+        fontSize: 16,
+        fontWeight: '500',
+    },
+    appleButton: {
+        backgroundColor: '#000',
+    },
+    appleButtonText: {
+        color: '#fff',
+        fontSize: 16,
+        fontWeight: '600',
+    },
 });
