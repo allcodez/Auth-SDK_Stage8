@@ -113,9 +113,11 @@ const AuthProvider = ({ config, children }) => {
                         if (tokenError.code === types_1.ProviderErrorCodes.USER_TOKEN_EXPIRED ||
                             tokenError.code === types_1.ProviderErrorCodes.NULL_USER) {
                             setStatus(types_1.AuthStatus.TOKEN_EXPIRED);
+                            setError((0, errors_1.mapFirebaseError)(tokenError));
                         }
                         else {
                             setStatus(types_1.AuthStatus.UNAUTHENTICATED);
+                            setError((0, errors_1.mapFirebaseError)(tokenError));
                         }
                         setUser(null);
                     }
@@ -128,6 +130,7 @@ const AuthProvider = ({ config, children }) => {
             catch (err) {
                 console.error("Auth State Error:", err);
                 setStatus(types_1.AuthStatus.UNAUTHENTICATED);
+                setError((0, errors_1.mapFirebaseError)(err));
             }
             finally {
                 setIsDataLoading(false);
@@ -145,10 +148,10 @@ const AuthProvider = ({ config, children }) => {
             await FirebaseAuth.signInWithEmailAndPassword(firebaseAuthInstance, email, password);
         }
         catch (err) {
-            const mapped = (0, errors_1.mapFirebaseError)(err);
-            setError({ ...mapped, originalError: err });
+            const mappedException = (0, errors_1.mapFirebaseError)(err);
+            setError(mappedException);
             setStatus(types_1.AuthStatus.UNAUTHENTICATED);
-            throw err;
+            throw mappedException;
         }
     };
     const signUpWithEmail = async ({ email, password }) => {
@@ -160,18 +163,19 @@ const AuthProvider = ({ config, children }) => {
             await FirebaseAuth.createUserWithEmailAndPassword(firebaseAuthInstance, email, password);
         }
         catch (err) {
-            const mapped = (0, errors_1.mapFirebaseError)(err);
-            setError({ ...mapped, originalError: err });
+            const mappedException = (0, errors_1.mapFirebaseError)(err);
+            setError(mappedException);
             setStatus(types_1.AuthStatus.UNAUTHENTICATED);
-            throw err;
+            throw mappedException;
         }
     };
     const signInWithGoogle = async () => {
         if (!firebaseAuthInstance)
             throw new Error('Firebase not initialized');
         if (!config.enableGoogle || !config.googleWebClientId) {
-            setError({ code: types_1.AuthErrorCode.CONFIG_ERROR, message: 'Google Auth not configured. Missing googleWebClientId.' });
-            return;
+            const configError = new errors_1.ConfigurationException('Google Auth not configured. Missing googleWebClientId.');
+            setError(configError);
+            throw configError;
         }
         try {
             setError(null);
@@ -187,55 +191,29 @@ const AuthProvider = ({ config, children }) => {
         }
         catch (err) {
             console.error('Google Sign-In Error:', err);
-            let mappedError;
             if (err.code === types_1.ProviderErrorCodes.GOOGLE_CANCELLED) {
-                mappedError = {
-                    code: types_1.AuthErrorCode.GOOGLE_SIGN_IN_CANCELLED,
-                    message: 'Google Sign-In was cancelled',
-                    originalError: err
-                };
+                const cancelError = new errors_1.GoogleSignInCancelledException(err);
+                setError(cancelError);
                 setStatus(types_1.AuthStatus.UNAUTHENTICATED);
                 return;
             }
-            else if (err.code === types_1.ProviderErrorCodes.GOOGLE_IN_PROGRESS) {
-                mappedError = {
-                    code: types_1.AuthErrorCode.GOOGLE_SIGN_IN_IN_PROGRESS,
-                    message: 'Google Sign-In is already in progress',
-                    originalError: err
-                };
-            }
-            else if (err.code === types_1.ProviderErrorCodes.GOOGLE_PLAY_UNAVAILABLE) {
-                mappedError = {
-                    code: types_1.AuthErrorCode.GOOGLE_PLAY_SERVICES_NOT_AVAILABLE,
-                    message: 'Google Play Services are not available. Please update Google Play Services.',
-                    originalError: err
-                };
-            }
-            else {
-                mappedError = (0, errors_1.mapFirebaseError)(err);
-            }
-            setError({ ...mappedError, originalError: err });
+            const mappedException = (0, errors_1.mapFirebaseError)(err);
+            setError(mappedException);
             setStatus(types_1.AuthStatus.UNAUTHENTICATED);
-            throw mappedError;
+            throw mappedException;
         }
     };
     const signInWithApple = async () => {
         if (!firebaseAuthInstance)
             throw new Error('Firebase not initialized');
         if (react_native_1.Platform.OS !== 'ios') {
-            const platformError = {
-                code: types_1.AuthErrorCode.APPLE_SIGN_IN_NOT_SUPPORTED,
-                message: 'Apple Sign-In is only available on iOS devices',
-            };
+            const platformError = new errors_1.AppleSignInNotSupportedException();
             setError(platformError);
             throw platformError;
         }
         const isAvailable = await AppleAuthentication.isAvailableAsync();
         if (!isAvailable) {
-            const availabilityError = {
-                code: types_1.AuthErrorCode.APPLE_SIGN_IN_NOT_SUPPORTED,
-                message: 'Apple Sign-In is not available on this device (requires iOS 13+)',
-            };
+            const availabilityError = new errors_1.AppleSignInNotSupportedException();
             setError(availabilityError);
             throw availabilityError;
         }
@@ -265,19 +243,15 @@ const AuthProvider = ({ config, children }) => {
         catch (err) {
             console.error('Apple Sign-In Error:', err);
             if (err.code === types_1.ProviderErrorCodes.APPLE_CANCELLED) {
-                const cancelError = {
-                    code: types_1.AuthErrorCode.APPLE_SIGN_IN_CANCELLED,
-                    message: 'Apple Sign-In was cancelled',
-                    originalError: err
-                };
+                const cancelError = new errors_1.AppleSignInCancelledException(err);
                 setError(cancelError);
                 setStatus(types_1.AuthStatus.UNAUTHENTICATED);
                 return;
             }
-            const mappedError = (0, errors_1.mapFirebaseError)(err);
-            setError({ ...mappedError, originalError: err });
+            const mappedException = (0, errors_1.mapFirebaseError)(err);
+            setError(mappedException);
             setStatus(types_1.AuthStatus.UNAUTHENTICATED);
-            throw mappedError;
+            throw mappedException;
         }
     };
     const signOut = async () => {
@@ -297,6 +271,8 @@ const AuthProvider = ({ config, children }) => {
         }
         catch (err) {
             console.error('Sign out error:', err);
+            const signOutError = (0, errors_1.mapFirebaseError)(err);
+            setError(signOutError);
             setUser(null);
             setStatus(types_1.AuthStatus.UNAUTHENTICATED);
         }

@@ -18,11 +18,7 @@ import {
 } from './exceptions';
 import { ProviderErrorCodes } from '../types';
 
-/**
- * Maps Firebase errors to custom exception classes
- * @param error - The original error from Firebase or provider
- * @returns Custom AuthException
- */
+
 export const mapFirebaseError = (error: any): AuthException => {
   // If it's already our custom exception, return it
   if (error instanceof AuthException) {

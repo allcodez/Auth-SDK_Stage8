@@ -46,14 +46,12 @@ export const CustomUIExample = ({ onBack }: Props) => {
 
   const isLoading = status === AuthStatus.LOADING;
 
-  // ✅ Sign Out Handler - Default error handling
   const handleSignOut = async () => {
     try {
       setLocalError(null);
       await signOut();
     } catch (e: any) {
       console.error('Sign out error:', e);
-      // Default error handling
       Alert.alert(
         "Sign Out Failed",
         e instanceof AuthException ? e.message : "An unexpected error occurred."
@@ -68,10 +66,8 @@ export const CustomUIExample = ({ onBack }: Props) => {
     try {
       if (isSignUp) {
         await signUpWithEmail({ email, password });
-        Alert.alert('Success! 🎉', 'Account created successfully!');
       } else {
         await signInWithEmail({ email, password });
-        Alert.alert('Welcome Back! 👋', 'Signed in successfully!');
       }
       setEmail('');
       setPassword('');
@@ -79,7 +75,7 @@ export const CustomUIExample = ({ onBack }: Props) => {
       console.error('Auth error:', e);
 
       if (e instanceof InvalidCredentialsException) {
-        setLocalError('Wrong email or password. Please check your credentials and try again.');
+        setLocalError('Wrong email or passworddddddd. Please check your credentials and try again.');
       } else if (e instanceof EmailAlreadyInUseException) {
         setLocalError('This email is already registered. Try signing in instead.');
         setTimeout(() => {
@@ -90,7 +86,7 @@ export const CustomUIExample = ({ onBack }: Props) => {
         setLocalError('No internet connection. Please check your network and try again.');
       } else {
         if (e instanceof AuthException) {
-          setLocalError(e.message); // Use SDK's error message
+          setLocalError(e.message);
         } else {
           setLocalError('Something went wrong. Please try again.');
         }
@@ -104,7 +100,6 @@ export const CustomUIExample = ({ onBack }: Props) => {
 
     try {
       await signInWithGoogle();
-      Alert.alert('Success! 🎉', 'Signed in with Google!');
     } catch (e: any) {
       console.error('Google Sign-In error:', e);
 
@@ -116,10 +111,9 @@ export const CustomUIExample = ({ onBack }: Props) => {
         setLocalError('No internet connection. Please check your network.');
       } else {
         if (e instanceof AuthException) {
-          // Use SDK's message but don't show for cancellations
           if (e.message.toLowerCase().includes('cancel')) {
             console.log('User cancelled Google Sign-In');
-            return; // Silent handling for cancellations
+            return;
           }
           setLocalError(`Google Sign-In failed: ${e.message}`);
         } else {
@@ -135,7 +129,6 @@ export const CustomUIExample = ({ onBack }: Props) => {
 
     try {
       await signInWithApple();
-      Alert.alert('Success! 🎉', 'Signed in with Apple!');
     } catch (e: any) {
       console.error('Apple Sign-In error:', e);
 
@@ -146,9 +139,7 @@ export const CustomUIExample = ({ onBack }: Props) => {
       } else if (e instanceof NetworkException) {
         setLocalError('No internet connection. Please check your network.');
       } else {
-        // ✅ DEFAULT: Everything else
         if (e instanceof AuthException) {
-          // Silent handling for cancellations
           if (e.message.toLowerCase().includes('cancel')) {
             console.log('User cancelled Apple Sign-In');
             return;
@@ -261,10 +252,10 @@ export const CustomUIExample = ({ onBack }: Props) => {
         {displayError && (
           <View style={styles.errorBox}>
             <View style={styles.errorTitleRow}>
-              <Ionicons name="alert-circle" size={16} color="#fca5a5" />
-              {displayErrorCode && (
+              {/* <Ionicons name="alert-circle" size={16} color="#fca5a5" /> */}
+              {/* {displayErrorCode && (
                 <Text style={styles.errorTitle}>{displayErrorCode}</Text>
-              )}
+              )} */}
             </View>
             <Text style={styles.errorMessage}>{displayError}</Text>
             <TouchableOpacity
@@ -373,7 +364,6 @@ export const CustomUIExample = ({ onBack }: Props) => {
           </TouchableOpacity>
         </View>
 
-        {/* ✅ Updated code hint showing simplified exception handling */}
         <View style={styles.codeHint}>
           <View style={styles.codeHintTitleRow}>
             <Ionicons name="bulb-outline" size={14} color="#fbbf24" />

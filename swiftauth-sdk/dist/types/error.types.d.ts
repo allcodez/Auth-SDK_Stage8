@@ -13,20 +13,21 @@ export declare enum AuthErrorCode {
     EMAIL_ALREADY_IN_USE = "auth/email-already-in-use",
     WEAK_PASSWORD = "auth/weak-password",
     TOKEN_EXPIRED = "auth/token-expired",
-    NETWORK_ERROR = "auth/network-request-failed",
+    NETWORK_ERROR = "auth/network-error",
     UNKNOWN = "auth/unknown",
     CONFIG_ERROR = "auth/configuration-error",
     CANCELLED = "auth/cancelled",
-    GOOGLE_SIGN_IN_CANCELLED = "GOOGLE_SIGN_IN_CANCELLED",
-    GOOGLE_SIGN_IN_IN_PROGRESS = "GOOGLE_SIGN_IN_IN_PROGRESS",
-    GOOGLE_PLAY_SERVICES_NOT_AVAILABLE = "GOOGLE_PLAY_SERVICES_NOT_AVAILABLE",
-    GOOGLE_SIGN_IN_FAILED = "GOOGLE_SIGN_IN_FAILED",
-    APPLE_SIGN_IN_CANCELLED = "APPLE_SIGN_IN_CANCELLED",
-    APPLE_SIGN_IN_FAILED = "APPLE_SIGN_IN_FAILED",
-    APPLE_SIGN_IN_NOT_SUPPORTED = "APPLE_SIGN_IN_NOT_SUPPORTED"
+    GOOGLE_SIGN_IN_CANCELLED = "auth/google-sign-in-cancelled",
+    GOOGLE_SIGN_IN_IN_PROGRESS = "auth/google-sign-in-in-progress",
+    GOOGLE_PLAY_SERVICES_NOT_AVAILABLE = "auth/google-play-services-unavailable",
+    GOOGLE_SIGN_IN_FAILED = "auth/google-sign-in-failed",
+    APPLE_SIGN_IN_CANCELLED = "auth/apple-sign-in-cancelled",
+    APPLE_SIGN_IN_FAILED = "auth/apple-sign-in-failed",
+    APPLE_SIGN_IN_NOT_SUPPORTED = "auth/apple-sign-in-not-supported"
 }
 export interface AuthError {
     code: string | ProviderErrorCodes | AuthErrorCode;
     message: string;
     originalError?: any;
 }
+export declare const isAuthError: (error: any) => error is AuthError;
