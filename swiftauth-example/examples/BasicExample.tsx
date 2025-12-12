@@ -1,5 +1,12 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
+import { 
+  View, 
+  Text, 
+  TouchableOpacity, 
+  StyleSheet, 
+  Image, 
+  Alert
+} from 'react-native';
 import { AuthScreen, useAuth } from 'rn-swiftauth-sdk';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -9,6 +16,16 @@ interface Props {
 
 export const BasicExample = ({ onBack }: Props) => {
     const { user, signOut } = useAuth();
+
+    // Handled Sign Out 
+    const handleSignOut = async () => {
+        try {
+            await signOut();
+        } catch (error: any) {
+            console.log("Sign Out Error:", error);
+            Alert.alert("Sign Out Failed", error.message || "Please check your connection.");
+        }
+    };
 
     if (user) {
         return (
@@ -33,7 +50,7 @@ export const BasicExample = ({ onBack }: Props) => {
                 </Text>
                 <Text style={styles.email}>{user.email}</Text>
 
-                <TouchableOpacity style={styles.button} onPress={() => signOut()}>
+                <TouchableOpacity style={styles.button} onPress={handleSignOut}>
                     <Text style={styles.buttonText}>Sign Out</Text>
                 </TouchableOpacity>
 
@@ -51,6 +68,7 @@ export const BasicExample = ({ onBack }: Props) => {
                 <Ionicons name="arrow-back" size={16} color="#007AFF" />
                 <Text style={styles.floatingBackText}>Examples</Text>
             </TouchableOpacity>
+            {/* AuthScreen handles its own login/signup errors internally */}
             <AuthScreen />
         </View>
     );
