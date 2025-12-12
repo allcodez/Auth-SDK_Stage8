@@ -1,5 +1,12 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
+import { 
+  View, 
+  Text, 
+  TouchableOpacity, 
+  StyleSheet, 
+  Image, 
+  Alert
+} from 'react-native';
 import { AuthScreen, useAuth } from 'rn-swiftauth-sdk';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -9,6 +16,16 @@ interface Props {
 
 export const StyledExample = ({ onBack }: Props) => {
   const { user, signOut } = useAuth();
+
+  //Sign Out Handler
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+    } catch (error: any) {
+      console.log("Sign out error:", error);
+      Alert.alert("Sign Out Failed", error.message || "Please check your connection.");
+    }
+  };
 
   if (user) {
     return (
@@ -33,7 +50,8 @@ export const StyledExample = ({ onBack }: Props) => {
         </Text>
         <Text style={styles.email}>{user.email}</Text>
 
-        <TouchableOpacity style={styles.button} onPress={() => signOut()}>
+        {/* Updated to use safe signout handler */}
+        <TouchableOpacity style={styles.button} onPress={handleSignOut}>
           <Text style={styles.buttonText}>Sign Out</Text>
         </TouchableOpacity>
 

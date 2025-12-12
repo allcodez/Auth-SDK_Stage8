@@ -10,6 +10,7 @@ import {
   Platform,
   ScrollView,
   Image,
+  Alert
 } from 'react-native';
 import { useAuth, AuthStatus } from 'rn-swiftauth-sdk';
 import { Ionicons, Feather } from '@expo/vector-icons';
@@ -38,13 +39,23 @@ export const CustomUIExample = ({ onBack }: Props) => {
 
   const isLoading = status === AuthStatus.LOADING;
 
+  //Sign Out Handler
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+    } catch (e: any) {
+      console.log('Sign out error:', e);
+      Alert.alert("Sign Out Failed", e.message || "Please check your connection.");
+    }
+  };
+
   const handleSubmit = async () => {
     clearError();
     try {
       if (isSignUp) {
-        await signUpWithEmail(email, password);
+        await signUpWithEmail({email, password});
       } else {
-        await signInWithEmail(email, password);
+        await signInWithEmail({email, password});
       }
       setEmail('');
       setPassword('');
@@ -127,13 +138,15 @@ export const CustomUIExample = ({ onBack }: Props) => {
           </View>
         </View>
 
-        <TouchableOpacity style={styles.signOutButton} onPress={() => signOut()}>
+        {/* ✅ UPDATED: Use the safe handler */}
+        <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
           <Text style={styles.signOutText}>Sign Out</Text>
         </TouchableOpacity>
       </View>
     );
   }
 
+  // ... (Rest of the render and styles remain exactly the same)
   return (
     <KeyboardAvoidingView
       style={styles.container}
