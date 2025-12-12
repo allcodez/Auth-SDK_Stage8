@@ -1,1 +1,22 @@
-export * from './errorMapper';
+
+export {
+    AuthException,
+    InvalidCredentialsException,
+    UserNotFoundException,
+    EmailAlreadyInUseException,
+    WeakPasswordException,
+    TokenExpiredException,
+    NetworkException,
+    GoogleSignInCancelledException,
+    AppleSignInCancelledException,
+    AppleSignInNotSupportedException,
+    GooglePlayServicesUnavailableException,
+    ConfigurationException,
+    UnknownAuthException,
+} from './exceptions';
+
+export {
+    mapFirebaseError,
+    isAuthException,
+    getErrorMessage,
+} from './errorMapper';

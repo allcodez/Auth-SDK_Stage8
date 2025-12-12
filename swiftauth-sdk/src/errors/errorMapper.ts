@@ -1,139 +1,135 @@
+// swiftauth-sdk/src/errors/errorMapper.ts
+
 import { FirebaseError } from 'firebase/app';
-import { AuthError, AuthErrorCode } from '../types';
+import {
+  AuthException,
+  InvalidCredentialsException,
+  UserNotFoundException,
+  EmailAlreadyInUseException,
+  WeakPasswordException,
+  TokenExpiredException,
+  NetworkException,
+  GoogleSignInCancelledException,
+  AppleSignInCancelledException,
+  AppleSignInNotSupportedException,
+  GooglePlayServicesUnavailableException,
+  ConfigurationException,
+  UnknownAuthException,
+} from './exceptions';
+import { ProviderErrorCodes } from '../types';
 
-export const mapFirebaseError = (error: any): AuthError => {
-  // Default fallback
-  const fallbackError: AuthError = {
-    code: AuthErrorCode.UNKNOWN,
-    message: 'An unexpected error occurred',
-    originalError: error,
-  };
+/**
+ * Maps Firebase errors to custom exception classes
+ * @param error - The original error from Firebase or provider
+ * @returns Custom AuthException
+ */
+export const mapFirebaseError = (error: any): AuthException => {
+  // If it's already our custom exception, return it
+  if (error instanceof AuthException) {
+    return error;
+  }
 
-  // If it's not a Firebase error, return generic
+  // If it's not a Firebase error or doesn't have a code, return generic
   if (!error || typeof error.code !== 'string') {
-    return {
-      ...fallbackError,
-      message: error?.message || fallbackError.message
-    };
+    return new UnknownAuthException(
+      error?.message || 'An unexpected error occurred',
+      error
+    );
   }
 
   const fbError = error as FirebaseError;
 
+  // Map Firebase error codes to custom exceptions
   switch (fbError.code) {
-    // Email/Password Errors
+    // Invalid Credentials
     case 'auth/invalid-email':
-    case 'auth/user-not-found':
     case 'auth/wrong-password':
     case 'auth/invalid-credential':
-      return {
-        code: AuthErrorCode.INVALID_CREDENTIALS,
-        message: 'Invalid email or password.',
-        originalError: error
-      };
-
-    case 'auth/email-already-in-use':
-      return {
-        code: AuthErrorCode.EMAIL_ALREADY_IN_USE,
-        message: 'This email is already registered.',
-        originalError: error
-      };
-
-    case 'auth/weak-password':
-      return {
-        code: AuthErrorCode.WEAK_PASSWORD,
-        message: 'Password is too weak. Please use a stronger password.',
-        originalError: error
-      };
-
-    case 'auth/network-request-failed':
-      return {
-        code: AuthErrorCode.NETWORK_ERROR,
-        message: 'Network error. Please check your connection.',
-        originalError: error
-      };
-
-    // Google Sign-In Errors
-    case 'auth/popup-closed-by-user':
-    case 'auth/cancelled-popup-request':
-      return {
-        code: AuthErrorCode.UNKNOWN,
-        message: 'Sign-in was cancelled.',
-        originalError: error
-      };
-
-    case 'auth/account-exists-with-different-credential':
-      return {
-        code: AuthErrorCode.EMAIL_ALREADY_IN_USE,
-        message: 'An account already exists with this email using a different sign-in method.',
-        originalError: error
-      };
-
-    case 'auth/invalid-credential':
-      return {
-        code: AuthErrorCode.INVALID_CREDENTIALS,
-        message: 'The credential received is invalid. Please try again.',
-        originalError: error
-      };
-
-    case 'auth/operation-not-allowed':
-      return {
-        code: AuthErrorCode.UNKNOWN,
-        message: 'This sign-in method is not enabled. Please contact support.',
-        originalError: error
-      };
-
     case 'auth/user-disabled':
-      return {
-        code: AuthErrorCode.INVALID_CREDENTIALS,
-        message: 'This account has been disabled.',
-        originalError: error
-      };
+      return new InvalidCredentialsException(error);
 
-    // Apple Sign-In Errors
-    case 'auth/invalid-verification-code':
-    case 'auth/invalid-verification-id':
-      return {
-        code: AuthErrorCode.INVALID_CREDENTIALS,
-        message: 'The verification code is invalid. Please try again.',
-        originalError: error
-      };
+    // User Not Found
+    case 'auth/user-not-found':
+      return new UserNotFoundException(error);
 
-    // Token Expiration
+    // Email Already In Use
+    case 'auth/email-already-in-use':
+    case 'auth/account-exists-with-different-credential':
+      return new EmailAlreadyInUseException(error);
+
+    // Weak Password
+    case 'auth/weak-password':
+      return new WeakPasswordException(error);
+
+    // Token Expired
     case 'auth/id-token-expired':
     case 'auth/user-token-expired':
-      return {
-        code: AuthErrorCode.TOKEN_EXPIRED,
-        message: 'Your session has expired. Please sign in again.',
-        originalError: error
-      };
+    case ProviderErrorCodes.USER_TOKEN_EXPIRED:
+      return new TokenExpiredException(error);
 
-    // OAuth-Specific Errors
+    // Network Error
+    case 'auth/network-request-failed':
+    case 'auth/timeout':
+      return new NetworkException(error);
+
+    // Google Sign-In Errors
+    case ProviderErrorCodes.GOOGLE_CANCELLED:
+    case 'auth/popup-closed-by-user':
+    case 'auth/cancelled-popup-request':
+      return new GoogleSignInCancelledException(error);
+
+    case ProviderErrorCodes.GOOGLE_PLAY_UNAVAILABLE:
+      return new GooglePlayServicesUnavailableException(error);
+
+    // Apple Sign-In Errors
+    case ProviderErrorCodes.APPLE_CANCELLED:
+      return new AppleSignInCancelledException(error);
+
+    case ProviderErrorCodes.APPLE_NOT_SUPPORTED:
+      return new AppleSignInNotSupportedException(error);
+
+    // Configuration Errors
+    case 'auth/operation-not-allowed':
+      return new ConfigurationException(
+        'This sign-in method is not enabled. Please check your Firebase configuration.',
+        error
+      );
+
     case 'auth/unauthorized-domain':
-      return {
-        code: AuthErrorCode.UNKNOWN,
-        message: 'This domain is not authorized for OAuth operations.',
-        originalError: error
-      };
+      return new ConfigurationException(
+        'This domain is not authorized for OAuth operations.',
+        error
+      );
 
     case 'auth/invalid-oauth-provider':
-      return {
-        code: AuthErrorCode.UNKNOWN,
-        message: 'The OAuth provider configuration is invalid.',
-        originalError: error
-      };
-
     case 'auth/invalid-oauth-client-id':
-      return {
-        code: AuthErrorCode.UNKNOWN,
-        message: 'The OAuth client ID is invalid.',
-        originalError: error
-      };
+      return new ConfigurationException(
+        'The OAuth configuration is invalid.',
+        error
+      );
 
+    // Default
     default:
-      return {
-        code: AuthErrorCode.UNKNOWN,
-        message: fbError.message || 'An unknown error occurred.',
-        originalError: error
-      };
+      return new UnknownAuthException(
+        fbError.message || 'An unknown error occurred.',
+        error
+      );
   }
+};
+
+/**
+ * Helper function to check if an error is a specific exception type
+ */
+export const isAuthException = (error: any, exceptionType: new (...args: any[]) => AuthException): boolean => {
+  return error instanceof exceptionType;
+};
+
+/**
+ * Helper to extract user-friendly message from any error
+ */
+export const getErrorMessage = (error: any): string => {
+  if (error instanceof AuthException) {
+    return error.message;
+  }
+  return error?.message || 'An unexpected error occurred';
 };
