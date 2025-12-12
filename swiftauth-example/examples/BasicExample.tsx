@@ -1,10 +1,10 @@
 import React from 'react';
-import { 
-  View, 
-  Text, 
-  TouchableOpacity, 
-  StyleSheet, 
-  Image, 
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  Image,
   Alert
 } from 'react-native';
 import { AuthScreen, useAuth } from 'rn-swiftauth-sdk';
@@ -17,7 +17,7 @@ interface Props {
 export const BasicExample = ({ onBack }: Props) => {
     const { user, signOut } = useAuth();
 
-    // Handled Sign Out 
+    // Handled Sign Out
     const handleSignOut = async () => {
         try {
             await signOut();

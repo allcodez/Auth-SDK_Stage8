@@ -1,5 +1,5 @@
 import { AuthConfig } from './config.types';
-import { AuthError } from './error.types';
+import { AuthException } from '../errors';
 export declare enum AuthStatus {
     AUTHENTICATED = "AUTHENTICATED",
     UNAUTHENTICATED = "UNAUTHENTICATED",
@@ -26,7 +26,7 @@ export interface AuthContextType {
     user: User | null;
     status: AuthStatus;
     isLoading: boolean;
-    error: AuthError | null;
+    error: AuthException | null;
     config: AuthConfig;
     signInWithEmail: (options: EmailSignInOptions) => Promise<void>;
     signUpWithEmail: (options: EmailSignUpOptions) => Promise<void>;

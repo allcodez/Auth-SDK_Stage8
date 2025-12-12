@@ -13,6 +13,12 @@ import {
   Alert
 } from 'react-native';
 import { useAuth, AuthStatus } from 'rn-swiftauth-sdk';
+import {
+  AuthException,
+  InvalidCredentialsException,
+  EmailAlreadyInUseException,
+  NetworkException,
+} from 'rn-swiftauth-sdk';
 import { Ionicons, Feather } from '@expo/vector-icons';
 
 interface Props {
@@ -24,6 +30,7 @@ export const CustomUIExample = ({ onBack }: Props) => {
   const [password, setPassword] = useState('');
   const [isSignUp, setIsSignUp] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [localError, setLocalError] = useState<string | null>(null);
 
   const {
     user,
@@ -39,55 +46,122 @@ export const CustomUIExample = ({ onBack }: Props) => {
 
   const isLoading = status === AuthStatus.LOADING;
 
-  //Sign Out Handler
   const handleSignOut = async () => {
     try {
+      setLocalError(null);
       await signOut();
     } catch (e: any) {
-      console.log('Sign out error:', e);
-      Alert.alert("Sign Out Failed", e.message || "Please check your connection.");
+      console.error('Sign out error:', e);
+      Alert.alert(
+        "Sign Out Failed",
+        e instanceof AuthException ? e.message : "An unexpected error occurred."
+      );
     }
   };
 
   const handleSubmit = async () => {
     clearError();
+    setLocalError(null);
+
     try {
       if (isSignUp) {
-        await signUpWithEmail({email, password});
+        await signUpWithEmail({ email, password });
       } else {
-        await signInWithEmail({email, password});
+        await signInWithEmail({ email, password });
       }
       setEmail('');
       setPassword('');
-    } catch (e) {
-      console.log('Auth error handled by SDK');
+    } catch (e: any) {
+      console.error('Auth error:', e);
+
+      if (e instanceof InvalidCredentialsException) {
+        setLocalError('Wrong email or passworddddddd. Please check your credentials and try again.');
+      } else if (e instanceof EmailAlreadyInUseException) {
+        setLocalError('This email is already registered. Try signing in instead.');
+        setTimeout(() => {
+          setIsSignUp(false);
+          setLocalError(null);
+        }, 3000);
+      } else if (e instanceof NetworkException) {
+        setLocalError('No internet connection. Please check your network and try again.');
+      } else {
+        if (e instanceof AuthException) {
+          setLocalError(e.message);
+        } else {
+          setLocalError('Something went wrong. Please try again.');
+        }
+      }
     }
   };
 
   const handleGoogleSignIn = async () => {
     clearError();
+    setLocalError(null);
+
     try {
       await signInWithGoogle();
-    } catch (e) {
-      console.log('Google Sign-In error handled by SDK');
+    } catch (e: any) {
+      console.error('Google Sign-In error:', e);
+
+      if (e instanceof InvalidCredentialsException) {
+        setLocalError('Google authentication failed. Please try again.');
+      } else if (e instanceof EmailAlreadyInUseException) {
+        setLocalError('This Google account is already linked to another user.');
+      } else if (e instanceof NetworkException) {
+        setLocalError('No internet connection. Please check your network.');
+      } else {
+        if (e instanceof AuthException) {
+          if (e.message.toLowerCase().includes('cancel')) {
+            console.log('User cancelled Google Sign-In');
+            return;
+          }
+          setLocalError(`Google Sign-In failed: ${e.message}`);
+        } else {
+          setLocalError('Google Sign-In failed. Please try again.');
+        }
+      }
     }
   };
 
   const handleAppleSignIn = async () => {
     clearError();
+    setLocalError(null);
+
     try {
       await signInWithApple();
-    } catch (e) {
-      console.log('Apple Sign-In error handled by SDK');
+    } catch (e: any) {
+      console.error('Apple Sign-In error:', e);
+
+      if (e instanceof InvalidCredentialsException) {
+        setLocalError('Apple authentication failed. Please try again.');
+      } else if (e instanceof EmailAlreadyInUseException) {
+        setLocalError('This Apple ID is already linked to another account.');
+      } else if (e instanceof NetworkException) {
+        setLocalError('No internet connection. Please check your network.');
+      } else {
+        if (e instanceof AuthException) {
+          if (e.message.toLowerCase().includes('cancel')) {
+            console.log('User cancelled Apple Sign-In');
+            return;
+          }
+          setLocalError(`Apple Sign-In failed: ${e.message}`);
+        } else {
+          setLocalError('Apple Sign-In failed. Please try again.');
+        }
+      }
     }
   };
 
   const toggleMode = () => {
     setIsSignUp(!isSignUp);
     clearError();
+    setLocalError(null);
     setEmail('');
     setPassword('');
   };
+
+  const displayError = localError || error?.message;
+  const displayErrorCode = error?.code;
 
   if (user) {
     return (
@@ -138,7 +212,6 @@ export const CustomUIExample = ({ onBack }: Props) => {
           </View>
         </View>
 
-        {/* ✅ UPDATED: Use the safe handler */}
         <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
           <Text style={styles.signOutText}>Sign Out</Text>
         </TouchableOpacity>
@@ -146,7 +219,6 @@ export const CustomUIExample = ({ onBack }: Props) => {
     );
   }
 
-  // ... (Rest of the render and styles remain exactly the same)
   return (
     <KeyboardAvoidingView
       style={styles.container}
@@ -177,14 +249,21 @@ export const CustomUIExample = ({ onBack }: Props) => {
           </Text>
         </View>
 
-        {error && (
+        {displayError && (
           <View style={styles.errorBox}>
             <View style={styles.errorTitleRow}>
-              <Ionicons name="alert-circle" size={16} color="#fca5a5" />
-              <Text style={styles.errorTitle}>{error.code}</Text>
+              {/* <Ionicons name="alert-circle" size={16} color="#fca5a5" /> */}
+              {/* {displayErrorCode && (
+                <Text style={styles.errorTitle}>{displayErrorCode}</Text>
+              )} */}
             </View>
-            <Text style={styles.errorMessage}>{error.message}</Text>
-            <TouchableOpacity onPress={clearError}>
+            <Text style={styles.errorMessage}>{displayError}</Text>
+            <TouchableOpacity
+              onPress={() => {
+                clearError();
+                setLocalError(null);
+              }}
+            >
               <Text style={styles.dismissError}>Dismiss</Text>
             </TouchableOpacity>
           </View>
@@ -288,10 +367,22 @@ export const CustomUIExample = ({ onBack }: Props) => {
         <View style={styles.codeHint}>
           <View style={styles.codeHintTitleRow}>
             <Ionicons name="bulb-outline" size={14} color="#fbbf24" />
-            <Text style={styles.codeHintTitle}>Using the Hook:</Text>
+            <Text style={styles.codeHintTitle}>Exception Handling:</Text>
           </View>
           <Text style={styles.codeText}>
-            {`const { signInWithGoogle } = useAuth();\nawait signInWithGoogle();`}
+            {`try {
+  await signInWithEmail({ email, password });
+} catch (e) {
+  if (e instanceof InvalidCredentialsException) {
+    // Handle wrong password
+  } else if (e instanceof EmailAlreadyInUseException) {
+    // Handle duplicate email
+  } else if (e instanceof NetworkException) {
+    // Handle network error
+  } else {
+    // Default: all other errors
+  }
+}`}
           </Text>
         </View>
       </ScrollView>

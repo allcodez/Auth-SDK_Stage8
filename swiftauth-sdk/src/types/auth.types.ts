@@ -1,5 +1,5 @@
 import { AuthConfig } from './config.types';
-import { AuthError } from './error.types'; 
+import { AuthException } from '../errors';
 
 export enum AuthStatus {
   AUTHENTICATED = 'AUTHENTICATED',
@@ -32,13 +32,13 @@ export interface AuthContextType {
   user: User | null;
   status: AuthStatus;
   isLoading: boolean;
-  error: AuthError | null; // ✅ Uses the type imported from error.types.ts
+  error: AuthException | null;
   config: AuthConfig;
 
   // Function Signatures
   signInWithEmail: (options: EmailSignInOptions) => Promise<void>;
   signUpWithEmail: (options: EmailSignUpOptions) => Promise<void>;
-  
+
   signInWithGoogle: () => Promise<void>;
   signInWithApple: () => Promise<void>;
   signOut: () => Promise<void>;
