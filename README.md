@@ -237,61 +237,147 @@ const {
 
 ## Error Handling
 
-SwiftAuth maps Firebase errors to user-friendly messages:
+SwiftAuth provides a comprehensive error handling system with custom exceptions that map Firebase errors to user-friendly messages.
 
-| Error Code | User Message |
-|------------|--------------|
-| `auth/invalid-credentials` | "Invalid email or password." |
-| `auth/user-not-found` | "Invalid email or password." |
-| `auth/email-already-in-use` | "This email is already registered." |
-| `auth/weak-password` | "Password is too weak." |
-| `auth/network-request-failed` | "Network error. Please check your connection." |
+### Custom Exception Classes
 
-### Basic Usage
+All errors extend the base `AuthException` class and include:
+- `code`: Machine-readable error code
+- `message`: User-friendly error message
+- `timestamp`: When the error occurred
+- `originalError`: The underlying Firebase error (optional)
+- `toJSON()`: Serialize for logging/debugging
 
+### Supported Exceptions
+
+| Exception Class | Error Code | User Message |
+|-----------------|------------|--------------|
+| `InvalidCredentialsException` | `auth/invalid-credentials` | "Invalid email or password. Please check your credentials and try again." |
+| `UserNotFoundException` | `auth/user-not-found` | "No account found with this email. Please sign up first." |
+| `EmailAlreadyInUseException` | `auth/email-already-in-use` | "This email is already registered. Please sign in or use a different email." |
+| `WeakPasswordException` | `auth/weak-password` | "Password is too weak. Please use at least 6 characters with a mix of letters and numbers." |
+| `TokenExpiredException` | `auth/token-expired` | "Your session has expired. Please sign in again." |
+| `NetworkException` | `auth/network-error` | "Network error. Please check your internet connection and try again." |
+| `GoogleSignInCancelledException` | `auth/google-sign-in-cancelled` | "Google Sign-In was cancelled." |
+| `AppleSignInCancelledException` | `auth/apple-sign-in-cancelled` | "Apple Sign-In was cancelled." |
+| `AppleSignInNotSupportedException` | `auth/apple-sign-in-not-supported` | "Apple Sign-In is only available on iOS 13+ devices." |
+| `GooglePlayServicesUnavailableException` | `auth/google-play-services-unavailable` | "Google Play Services are not available. Please update Google Play Services." |
+| `ConfigurationException` | `auth/configuration-error` | Custom message based on configuration issue |
+| `UnknownAuthException` | `auth/unknown` | "An unexpected error occurred." |
+
+### Basic Error Display
 ```typescript
-const { error } = useAuth();
+import { useAuth } from 'rn-swiftauth-sdk';
 
-if (error) {
-  return <Text style={{ color: 'red' }}>{error.message}</Text>;
-}
-```
+const LoginScreen = () => {
+  const { error, clearError } = useAuth();
 
-### Advanced: Raw Firebase Errors
-
-For custom UI implementations, access raw Firebase errors:
-
-**Method 1: Try/Catch Block**
-```typescript
-const { signInWithEmail } = useAuth();
-
-const handleLogin = async () => {
-  try {
-    await signInWithEmail({ email, password });
-  } catch (rawError: any) {
-    if (rawError.code === 'auth/requires-recent-login') {
-      showReauthModal();
-    } else if (rawError.code === 'auth/quota-exceeded') {
-      Alert.alert("System Overload", "Please try again later.");
-    }
-  }
+  return (
+    <View>
+      {error && (
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>{error.message}</Text>
+          <Button title="Dismiss" onPress={clearError} />
+        </View>
+      )}
+    </View>
+  );
 };
 ```
 
-**Method 2: Global State**
+### Handling Specific Exception Types
+```typescript
+import { 
+  useAuth,
+  InvalidCredentialsException,
+  EmailAlreadyInUseException,
+  NetworkException 
+} from 'rn-swiftauth-sdk';
+
+const SignUpScreen = () => {
+  const { signUpWithEmail } = useAuth();
+
+  const handleSignUp = async () => {
+    try {
+      await signUpWithEmail({ email, password });
+    } catch (error) {
+      if (error instanceof EmailAlreadyInUseException) {
+        Alert.alert(
+          "Account Exists",
+          "Would you like to sign in instead?",
+          [
+            { text: "Cancel", style: "cancel" },
+            { text: "Sign In", onPress: () => navigation.navigate('SignIn') }
+          ]
+        );
+      } else if (error instanceof NetworkException) {
+        Alert.alert("Connection Issue", "Please check your internet and try again.");
+      } else if (error instanceof InvalidCredentialsException) {
+        Alert.alert("Invalid Input", "Please check your email and password.");
+      } else {
+        Alert.alert("Error", error.message);
+      }
+    }
+  };
+
+  return <Button title="Sign Up" onPress={handleSignUp} />;
+};
+```
+
+### Accessing Original Firebase Errors
+
+For advanced use cases, access the raw Firebase error:
 ```typescript
 const { error } = useAuth();
 
 useEffect(() => {
   if (error?.originalError) {
-    const rawCode = (error.originalError as any).code;
-    console.log("Raw Firebase Code:", rawCode);
+    console.log('Firebase Error Code:', error.originalError.code);
+    console.log('Firebase Error Message:', error.originalError.message);
     
-    if (rawCode === 'auth/invalid-email') {
-      setLocalizedMessage(t('errors.bad_email'));
+    // Custom handling for specific Firebase codes
+    if (error.originalError.code === 'auth/requires-recent-login') {
+      showReauthenticationPrompt();
     }
   }
 }, [error]);
+```
+
+### Error Logging for Debugging
+```typescript
+const { error } = useAuth();
+
+useEffect(() => {
+  if (error) {
+    // Log full error details (includes timestamp, code, original error)
+    console.log('Auth Error:', JSON.stringify(error.toJSON(), null, 2));
+    
+    // Send to error tracking service (e.g., Sentry)
+    logErrorToService(error.toJSON());
+  }
+}, [error]);
+```
+
+### Global Error Boundary
+```typescript
+import { useAuth } from 'rn-swiftauth-sdk';
+
+const ErrorBoundary = ({ children }) => {
+  const { error, clearError } = useAuth();
+
+  if (error) {
+    return (
+      <View style={styles.errorScreen}>
+        <Text style={styles.errorTitle}>Oops!</Text>
+        <Text style={styles.errorMessage}>{error.message}</Text>
+        <Text style={styles.errorCode}>Error Code: {error.code}</Text>
+        <Button title="Try Again" onPress={clearError} />
+      </View>
+    );
+  }
+
+  return <>{children}</>;
+};
 ```
 
 ---
