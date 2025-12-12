@@ -21,12 +21,11 @@
         "react": "19.1.0",
         "react-native": "0.81.5",
         "react-native-safe-area-context": "^5.6.2",
-        "rn-swiftauth-sdk": "^1.0.2"
+        "rn-swiftauth-sdk": "^1.0.3"
     },
     "devDependencies": {
         "@types/react": "~19.1.0",
         "typescript": "~5.9.2"
-
     },
     "private": true
 }
