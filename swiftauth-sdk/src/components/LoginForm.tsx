@@ -22,16 +22,18 @@ export const LoginForm = ({ styles: userStyles }: LoginFormProps) => {
     signInWithEmail,
     signInWithGoogle,
     signInWithApple,
-    isLoading, // ✅ Using the simplified boolean we added to context
+    isLoading,
     error,
-    config // ✅ We need this to check if social buttons are enabled
+    config
   } = useAuth();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   
-  // ✅ Validation Error State
   const [validationErrors, setValidationErrors] = useState<{ email?: string; password?: string }>({});
+
+  //Check if form is filled to enable button
+  const isFormFilled = email.length > 0 && password.length > 0;
 
   const handleLogin = async () => {
     // 1. Reset previous errors
@@ -46,14 +48,17 @@ export const LoginForm = ({ styles: userStyles }: LoginFormProps) => {
         email: emailErr || undefined,
         password: passErr || undefined
       });
-      return; // 🛑 Stop if invalid
+      return; //Stop if invalid
     }
 
     // 3. Attempt Login
     try {
-      await signInWithEmail(email, password);
+      //UPDATED: Clean Object Syntax
+      await signInWithEmail({ email, password });
     } catch (e) { 
       // Auth errors handled by global state
+      // DX: Log it for the developer (Optional but helpful for debugging)
+      console.log('Login failed:', e);
     }
   };
 
@@ -87,7 +92,7 @@ export const LoginForm = ({ styles: userStyles }: LoginFormProps) => {
         style={[
           defaultStyles.input, 
           userStyles?.input,
-          validationErrors.email ? { borderColor: 'red' } : {} // Highlight on error
+          validationErrors.email ? { borderColor: 'red' } : {} 
         ]}
         placeholder="Email"
         value={email}
@@ -100,7 +105,6 @@ export const LoginForm = ({ styles: userStyles }: LoginFormProps) => {
         placeholderTextColor="#999"
         editable={!isLoading}
       />
-      {/* Validation Message */}
       {validationErrors.email && (
         <Text style={defaultStyles.validationText}>{validationErrors.email}</Text>
       )}
@@ -124,11 +128,13 @@ export const LoginForm = ({ styles: userStyles }: LoginFormProps) => {
       <TouchableOpacity
         style={[
           defaultStyles.button,
-          isLoading && defaultStyles.buttonDisabled,
+          // Disable style if loading OR form is incomplete
+          (isLoading || !isFormFilled) && defaultStyles.buttonDisabled,
           userStyles?.button
         ]}
         onPress={handleLogin}
-        disabled={isLoading}
+        // Disable interaction if loading OR form is incomplete
+        disabled={isLoading || !isFormFilled}
       >
         {isLoading ? (
           <ActivityIndicator color={userStyles?.loadingIndicatorColor || "#fff"} />
@@ -139,7 +145,7 @@ export const LoginForm = ({ styles: userStyles }: LoginFormProps) => {
         )}
       </TouchableOpacity>
 
-      {/* OAuth Section - Conditionally Rendered based on Config */}
+      {/* OAuth Section */}
       {(config.enableGoogle || config.enableApple) && !isLoading && (
         <>
           <View style={defaultStyles.dividerContainer}>
@@ -190,7 +196,7 @@ const defaultStyles = StyleSheet.create({
     backgroundColor: '#f5f5f5',
     padding: 15,
     borderRadius: 8,
-    marginBottom: 8, // Reduced slightly to make room for validation text
+    marginBottom: 8,
     borderWidth: 1,
     borderColor: '#e0e0e0',
     fontSize: 16,
@@ -203,7 +209,10 @@ const defaultStyles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 8,
   },
-  buttonDisabled: { backgroundColor: '#a0cfff' },
+  buttonDisabled: { 
+    backgroundColor: '#a0cfff',
+    opacity: 0.7 
+  },
   buttonText: { color: '#fff', fontWeight: '600', fontSize: 16 },
   
   errorText: { color: 'red', marginBottom: 12, fontSize: 14, textAlign: 'center' },

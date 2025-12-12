@@ -40,13 +40,12 @@ const useAuth_1 = require("../hooks/useAuth");
 const PasswordInput_1 = require("./PasswordInput");
 const validation_1 = require("../utils/validation");
 const LoginForm = ({ styles: userStyles }) => {
-    const { signInWithEmail, signInWithGoogle, signInWithApple, isLoading, // ✅ Using the simplified boolean we added to context
-    error, config // ✅ We need this to check if social buttons are enabled
-     } = (0, useAuth_1.useAuth)();
+    const { signInWithEmail, signInWithGoogle, signInWithApple, isLoading, error, config } = (0, useAuth_1.useAuth)();
     const [email, setEmail] = (0, react_1.useState)('');
     const [password, setPassword] = (0, react_1.useState)('');
-    // ✅ Validation Error State
     const [validationErrors, setValidationErrors] = (0, react_1.useState)({});
+    //Check if form is filled to enable button
+    const isFormFilled = email.length > 0 && password.length > 0;
     const handleLogin = async () => {
         // 1. Reset previous errors
         setValidationErrors({});
@@ -58,14 +57,17 @@ const LoginForm = ({ styles: userStyles }) => {
                 email: emailErr || undefined,
                 password: passErr || undefined
             });
-            return; // 🛑 Stop if invalid
+            return; //Stop if invalid
         }
         // 3. Attempt Login
         try {
-            await signInWithEmail(email, password);
+            //UPDATED: Clean Object Syntax
+            await signInWithEmail({ email, password });
         }
         catch (e) {
             // Auth errors handled by global state
+            // DX: Log it for the developer (Optional but helpful for debugging)
+            console.log('Login failed:', e);
         }
     };
     const handleGoogleSignIn = async () => {
@@ -89,7 +91,7 @@ const LoginForm = ({ styles: userStyles }) => {
         react_1.default.createElement(react_native_1.TextInput, { style: [
                 defaultStyles.input,
                 userStyles?.input,
-                validationErrors.email ? { borderColor: 'red' } : {} // Highlight on error
+                validationErrors.email ? { borderColor: 'red' } : {}
             ], placeholder: "Email", value: email, onChangeText: (text) => {
                 setEmail(text);
                 if (validationErrors.email)
@@ -104,9 +106,12 @@ const LoginForm = ({ styles: userStyles }) => {
         validationErrors.password && (react_1.default.createElement(react_native_1.Text, { style: defaultStyles.validationText }, validationErrors.password)),
         react_1.default.createElement(react_native_1.TouchableOpacity, { style: [
                 defaultStyles.button,
-                isLoading && defaultStyles.buttonDisabled,
+                // Disable style if loading OR form is incomplete
+                (isLoading || !isFormFilled) && defaultStyles.buttonDisabled,
                 userStyles?.button
-            ], onPress: handleLogin, disabled: isLoading }, isLoading ? (react_1.default.createElement(react_native_1.ActivityIndicator, { color: userStyles?.loadingIndicatorColor || "#fff" })) : (react_1.default.createElement(react_native_1.Text, { style: [defaultStyles.buttonText, userStyles?.buttonText] }, "Sign In"))),
+            ], onPress: handleLogin, 
+            // Disable interaction if loading OR form is incomplete
+            disabled: isLoading || !isFormFilled }, isLoading ? (react_1.default.createElement(react_native_1.ActivityIndicator, { color: userStyles?.loadingIndicatorColor || "#fff" })) : (react_1.default.createElement(react_native_1.Text, { style: [defaultStyles.buttonText, userStyles?.buttonText] }, "Sign In"))),
         (config.enableGoogle || config.enableApple) && !isLoading && (react_1.default.createElement(react_1.default.Fragment, null,
             react_1.default.createElement(react_native_1.View, { style: defaultStyles.dividerContainer },
                 react_1.default.createElement(react_native_1.View, { style: defaultStyles.divider }),
@@ -130,7 +135,7 @@ const defaultStyles = react_native_1.StyleSheet.create({
         backgroundColor: '#f5f5f5',
         padding: 15,
         borderRadius: 8,
-        marginBottom: 8, // Reduced slightly to make room for validation text
+        marginBottom: 8,
         borderWidth: 1,
         borderColor: '#e0e0e0',
         fontSize: 16,
@@ -142,7 +147,10 @@ const defaultStyles = react_native_1.StyleSheet.create({
         alignItems: 'center',
         marginTop: 8,
     },
-    buttonDisabled: { backgroundColor: '#a0cfff' },
+    buttonDisabled: {
+        backgroundColor: '#a0cfff',
+        opacity: 0.7
+    },
     buttonText: { color: '#fff', fontWeight: '600', fontSize: 16 },
     errorText: { color: 'red', marginBottom: 12, fontSize: 14, textAlign: 'center' },
     validationText: { color: 'red', fontSize: 12, marginBottom: 10, marginLeft: 4, marginTop: -4 },

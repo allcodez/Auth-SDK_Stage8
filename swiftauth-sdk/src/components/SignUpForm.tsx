@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
-  Platform
+  Platform,
 } from 'react-native';
 
 import { useAuth } from '../hooks/useAuth';
@@ -24,19 +24,20 @@ export const SignUpForm = ({ styles: userStyles, showHints = true }: SignUpFormP
     signUpWithEmail,
     signInWithGoogle,
     signInWithApple,
-    isLoading, // ✅ Use boolean loading state
+    isLoading,
     error,
-    config // ✅ Use config for conditional rendering
+    config
   } = useAuth();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  
-  // ✅ Proper Validation State
   const [validationErrors, setValidationErrors] = useState<{ email?: string; password?: string; confirm?: string }>({});
 
-  // Password Requirements Logic for Visual Hints
+  // 1. Smart Button Logic: Check if all fields have content
+  const isFormFilled = email.length > 0 && password.length > 0 && confirmPassword.length > 0;
+
+  // Password Requirements Logic
   const requirements = [
     { label: "At least 6 characters", met: password.length >= 6 },
     { label: "Contains a number", met: /\d/.test(password) },
@@ -44,19 +45,16 @@ export const SignUpForm = ({ styles: userStyles, showHints = true }: SignUpFormP
   ];
 
   const handleSignUp = async () => {
-    // 1. Reset Errors
     setValidationErrors({});
 
     // 2. Validate Inputs
     const emailErr = validateEmail(email);
     const passErr = validatePasswordSignup(password);
-    
     let confirmErr;
     if (password !== confirmPassword) {
       confirmErr = "Passwords do not match.";
     }
 
-    // 3. Check if any errors exist
     if (emailErr || passErr || confirmErr) {
       setValidationErrors({
         email: emailErr || undefined,
@@ -66,11 +64,11 @@ export const SignUpForm = ({ styles: userStyles, showHints = true }: SignUpFormP
       return;
     }
 
-    // 4. Attempt Sign Up
     try {
-      await signUpWithEmail(email, password);
+      // ✅ UPDATED: New Object Syntax
+      await signUpWithEmail({ email, password });
     } catch (e) {
-      // Global error handled by useAuth
+      console.error('Sign Up Failed:', e);
     }
   };
 
@@ -92,7 +90,6 @@ export const SignUpForm = ({ styles: userStyles, showHints = true }: SignUpFormP
 
   return (
     <View style={[defaultStyles.container, userStyles?.container]}>
-      {/* Global API Error */}
       {error && (
         <Text style={[defaultStyles.globalError, userStyles?.errorText]}>
           {error.message}
@@ -177,11 +174,13 @@ export const SignUpForm = ({ styles: userStyles, showHints = true }: SignUpFormP
       <TouchableOpacity
         style={[
           defaultStyles.button,
-          isLoading && defaultStyles.buttonDisabled,
+          // Disable style if loading OR form incomplete
+          (isLoading || !isFormFilled) && defaultStyles.buttonDisabled,
           userStyles?.button
         ]}
         onPress={handleSignUp}
-        disabled={isLoading}
+        // Disable interaction if loading OR form incomplete
+        disabled={isLoading || !isFormFilled}
       >
         {isLoading ? (
           <ActivityIndicator color={userStyles?.loadingIndicatorColor || "#fff"} />
@@ -192,7 +191,7 @@ export const SignUpForm = ({ styles: userStyles, showHints = true }: SignUpFormP
         )}
       </TouchableOpacity>
 
-      {/* OAuth Section - Conditional Rendering */}
+      {/* OAuth Section */}
       {(config.enableGoogle || config.enableApple) && !isLoading && (
         <>
           <View style={defaultStyles.dividerContainer}>
@@ -201,7 +200,6 @@ export const SignUpForm = ({ styles: userStyles, showHints = true }: SignUpFormP
             <View style={defaultStyles.divider} />
           </View>
 
-          {/* Google */}
           {config.enableGoogle && (
             <TouchableOpacity
               style={[defaultStyles.oauthButton, defaultStyles.googleButton]}
@@ -213,7 +211,6 @@ export const SignUpForm = ({ styles: userStyles, showHints = true }: SignUpFormP
             </TouchableOpacity>
           )}
 
-          {/* Apple */}
           {config.enableApple && Platform.OS === 'ios' && (
             <TouchableOpacity
               style={[defaultStyles.oauthButton, defaultStyles.appleButton]}
@@ -232,17 +229,15 @@ export const SignUpForm = ({ styles: userStyles, showHints = true }: SignUpFormP
 
 const defaultStyles = StyleSheet.create({
   container: { width: '100%', marginVertical: 10 },
-
   input: {
     backgroundColor: '#f5f5f5',
     padding: 15,
     borderRadius: 8,
-    marginBottom: 8, // Reduced for validation text space
+    marginBottom: 8,
     borderWidth: 1,
     borderColor: '#e0e0e0',
     fontSize: 16,
   },
-
   button: {
     backgroundColor: '#34C759',
     padding: 15,
@@ -250,15 +245,13 @@ const defaultStyles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 8,
   },
-
-  buttonDisabled: { backgroundColor: '#9ce4ae' },
-
+  buttonDisabled: { 
+    backgroundColor: '#9ce4ae',
+    opacity: 0.7
+  },
   buttonText: { color: '#fff', fontWeight: '600', fontSize: 16 },
-
   globalError: { color: 'red', marginBottom: 12, fontSize: 14, textAlign: 'center' },
   validationText: { color: 'red', fontSize: 12, marginBottom: 10, marginLeft: 4, marginTop: -4 },
-
-  // OAuth Styles
   dividerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -266,7 +259,6 @@ const defaultStyles = StyleSheet.create({
   },
   divider: { flex: 1, height: 1, backgroundColor: '#e0e0e0' },
   dividerText: { marginHorizontal: 16, color: '#666', fontSize: 14 },
-
   oauthButton: {
     padding: 15,
     borderRadius: 8,
@@ -281,11 +273,8 @@ const defaultStyles = StyleSheet.create({
     borderColor: '#e0e0e0',
   },
   googleButtonText: { color: '#000', fontSize: 16, fontWeight: '500' },
-
   appleButton: { backgroundColor: '#000' },
   appleButtonText: { color: '#fff', fontSize: 16, fontWeight: '600' },
-
-  // Password Hint Styles
   hintContainer: { marginBottom: 15, paddingLeft: 5 },
   hintRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 4 },
   hintText: { color: '#666', fontSize: 12 },

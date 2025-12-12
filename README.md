@@ -5,219 +5,127 @@ A production-ready React Native authentication SDK powered by Firebase. Built wi
 [![npm version](https://img.shields.io/npm/v/rn-swiftauth-sdk.svg)](https://www.npmjs.com/package/rn-swiftauth-sdk)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-## ✨ Features
+## Features
 
-- 🔐 **Email/Password Authentication** - Built-in validation and error handling
-- 🎨 **Pre-built UI Components** - Beautiful, customizable auth screens out of the box
-- 🎣 **Headless Hooks** - Full control with `useAuth()` for custom implementations
-- 🍎 **Social Login Support** - Google and Apple Sign-In (iOS only for Apple)
-- 💾 **Persistent Sessions** - Configurable session management (local/memory)
-- 🎯 **TypeScript First** - Full type safety and IntelliSense support
-- ⚡ **Zero Configuration** - Works with minimal setup
-- 📱 **Expo & Bare React Native** - Compatible with both workflows
+- **Email/Password Authentication** - Built-in validation and error handling
+- **Pre-built UI Components** - Beautiful, customizable auth screens out of the box
+- **Headless Hooks** - Full control with `useAuth()` for custom implementations
+- **Social Login Support** - Google and Apple Sign-In (iOS only for Apple)
+- **Persistent Sessions** - Configurable session management (local/memory)
+- **TypeScript First** - Full type safety and IntelliSense support
+- **Zero Configuration** - Works with minimal setup
+- **Expo & Bare React Native** - Compatible with both workflows
 
 ---
 
-## 📦 Installation
+## Installation
 
 ### Prerequisites
 
-Ensure your environment meets these requirements:
-- **Node.js**: v18 or higher
-- **React Native**: v0.70+
-- **Expo**: SDK 49+ (Recommended)
+- Node.js v18 or higher
+- React Native v0.70+
+- Expo SDK 49+ (Recommended)
 
-### Step 1: Install the SDK
-
-Install SwiftAuth SDK from npm:
+### Install the SDK
 
 ```bash
 npm install rn-swiftauth-sdk
 ```
 
-**For Expo projects:**
+For Expo projects:
 ```bash
 npx expo install rn-swiftauth-sdk
 ```
 
-### Step 2: Install Required Dependencies
-
-SwiftAuth requires these peer dependencies:
+### Install Required Dependencies
 
 ```bash
 npm install firebase @react-native-async-storage/async-storage react-native-safe-area-context
 ```
 
-**For Expo projects:**
+For Expo:
 ```bash
 npx expo install firebase @react-native-async-storage/async-storage react-native-safe-area-context
 ```
 
-**For Google Sign-In (Optional):**
+### Optional: Social Login Dependencies
+
+**Google Sign-In:**
 ```bash
 npm install @react-native-google-signin/google-signin
-# or for Expo
-npx expo install @react-native-google-signin/google-signin
 ```
 
-**For Apple Sign-In (Optional, iOS only):**
+**Apple Sign-In (iOS only):**
 ```bash
 npm install @invertase/react-native-apple-authentication
-# or for Expo
-npx expo install @invertase/react-native-apple-authentication
 ```
 
-### Step 3: Install Native Dependencies (Bare React Native only)
+### Bare React Native Only
 
-If you're using Bare React Native (not Expo), install iOS CocoaPods:
-
+Install iOS CocoaPods:
 ```bash
-cd ios
-pod install
-cd ..
+cd ios && pod install && cd ..
 ```
-
-That's it! You're ready to start using SwiftAuth SDK.
 
 ---
 
-## 🔧 Firebase Setup
+## Firebase Setup
 
 ### 1. Create Firebase Project
 
-1. Go to [Firebase Console](https://console.firebase.google.com/)
+1. Go to [Firebase Console](https://console.firebase.google.com)
 2. Create a new project or select existing one
-3. Register a **Web App** (click the `</>` icon)
+3. Register a Web App (click the `</>` icon)
 4. Copy the `firebaseConfig` object
 
 ### 2. Enable Authentication Methods
 
-1. Go to **Authentication** > **Sign-in method**
+1. Navigate to **Authentication > Sign-in method**
 2. Enable **Email/Password**
 3. (Optional) Enable **Google** and/or **Apple** for social login
 
 ### 3. Platform-Specific Configuration
 
-#### Android Setup
+**Android:**
+- Register an Android app in Firebase Console
+- Download `google-services.json` and place in `android/app/`
+- Add to `android/build.gradle`:
+  ```gradle
+  classpath 'com.google.gms:google-services:4.3.15'
+  ```
+- Add to `android/app/build.gradle`:
+  ```gradle
+  apply plugin: 'com.google.gms.google-services'
+  ```
 
-1. In Firebase Console, register an **Android app**
-2. Download `google-services.json`
-3. Place it in your project: `android/app/google-services.json`
-
-**Update `android/build.gradle`:**
-```gradle
-buildscript {
-  dependencies {
-    // Add this line
-    classpath 'com.google.gms:google-services:4.3.15'
-  }
-}
-```
-
-**Update `android/app/build.gradle`:**
-```gradle
-apply plugin: 'com.android.application'
-// Add this line at the bottom
-apply plugin: 'com.google.gms.google-services'
-```
-
-**Update `app.json` for Expo:**
-```json
-{
-  "expo": {
-    "android": {
-      "googleServicesFile": "./google-services.json",
-      "package": "com.yourcompany.yourapp"
+**iOS:**
+- Register an iOS app in Firebase Console
+- Download `GoogleService-Info.plist` and place in project root (Expo) or `ios/YourAppName/` (Bare)
+- Update `app.json`:
+  ```json
+  {
+    "expo": {
+      "ios": {
+        "googleServicesFile": "./GoogleService-Info.plist",
+        "bundleIdentifier": "com.yourcompany.yourapp"
+      }
     }
   }
-}
-```
+  ```
 
-#### iOS Setup
-
-1. In Firebase Console, register an **iOS app**
-2. Download `GoogleService-Info.plist`
-3. Place it in your project root for Expo, or `ios/YourAppName/GoogleService-Info.plist` for Bare React Native
-
-**For Bare React Native:**
-- Drag `GoogleService-Info.plist` into your Xcode project
-
-**Update `app.json` for Expo:**
-```json
-{
-  "expo": {
-    "ios": {
-      "googleServicesFile": "./GoogleService-Info.plist",
-      "bundleIdentifier": "com.yourcompany.yourapp"
-    }
-  }
-}
-```
-
-**Install CocoaPods (Bare React Native iOS only):**
-```bash
-cd ios
-pod install
-cd ..
-```
-
-### 4. Google Sign-In Configuration (Optional)
-
-#### Get Google Client IDs
-
-1. Go to [Google Cloud Console](https://console.cloud.google.com/)
-2. Select your Firebase project
-3. Go to **APIs & Services** > **Credentials**
-4. You'll need:
-   - **Web Client ID** (for all platforms)
-   - **iOS Client ID** (optional, iOS-specific)
-
-**Update `app.json` for Google Sign-In:**
-```json
-{
-  "expo": {
-    "ios": {
-      "bundleIdentifier": "com.yourcompany.yourapp",
-      "googleServicesFile": "./GoogleService-Info.plist"
-    },
-    "android": {
-      "package": "com.yourcompany.yourapp",
-      "googleServicesFile": "./google-services.json"
-    }
-  }
-}
-```
-
-### 5. Apple Sign-In Configuration (Optional, iOS only)
-
-1. Go to your [Apple Developer Account](https://developer.apple.com/)
-2. Enable **Sign in with Apple** capability for your App ID
-3. For Bare React Native: Add the capability in Xcode: **Signing & Capabilities** > **+ Capability** > **Sign in with Apple**
-
-**Update `app.json` for Expo:**
-```json
-{
-  "expo": {
-    "ios": {
-      "usesAppleSignIn": true
-    }
-  }
-}
-```
+For detailed Firebase setup instructions, see the [Firebase documentation](https://firebase.google.com/docs/ios/setup).
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
-### Basic Setup (Email Authentication)
+### Basic Email Authentication
 
-```tsx
-// App.tsx
+```typescript
 import React from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider, AuthScreen, useAuth } from 'rn-swiftauth-sdk';
 
-// Your Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyD-Your-Actual-Key",
   authDomain: "your-project.firebaseapp.com",
@@ -229,12 +137,7 @@ const firebaseConfig = {
 
 const MainNavigation = () => {
   const { user } = useAuth();
-
-  if (!user) {
-    return <AuthScreen />;
-  }
-
-  return <HomeScreen user={user} />;
+  return user ? <HomeScreen user={user} /> : <AuthScreen />;
 };
 
 export default function App() {
@@ -250,11 +153,14 @@ export default function App() {
 
 ### With Social Login
 
-```tsx
+```typescript
 const firebaseConfig = {
   apiKey: "AIzaSyD-Your-Actual-Key",
   authDomain: "your-project.firebaseapp.com",
   projectId: "your-project-id",
+  storageBucket: "your-project.appspot.com",
+  messagingSenderId: "123456789",
+  appId: "1:123456789:web:abcdef",
   
   // Enable social login
   enableGoogle: true,
@@ -267,44 +173,16 @@ const firebaseConfig = {
 
 ---
 
-## 📚 API Reference
+## API Reference
 
 ### `<AuthProvider>`
 
 Wraps your app and provides authentication context.
 
-**Props:**
-
 | Prop | Type | Required | Description |
 |------|------|----------|-------------|
-| `config` | `AuthConfig` | Yes | Firebase configuration object |
-| `children` | `ReactNode` | Yes | Your app components |
-
-**AuthConfig Interface:**
-
-```typescript
-interface AuthConfig {
-  // Firebase credentials (Required)
-  apiKey: string;
-  authDomain: string;
-  projectId: string;
-  storageBucket?: string;
-  messagingSenderId?: string;
-  appId?: string;
-  
-  // Session persistence
-  persistence?: 'local' | 'memory'; // Default: 'local'
-  
-  // Feature flags
-  enableEmail?: boolean;      // Default: true
-  enableGoogle?: boolean;     // Default: false
-  enableApple?: boolean;      // Default: false (iOS only)
-  
-  // Google Sign-In
-  googleWebClientId?: string;
-  googleIosClientId?: string;
-}
-```
+| config | AuthConfig | Yes | Firebase configuration object |
+| children | ReactNode | Yes | Your app components |
 
 ### `useAuth()` Hook
 
@@ -312,63 +190,33 @@ Access authentication state and methods.
 
 ```typescript
 const {
-  user,           // Current user object or null
-  status,         // 'AUTHENTICATED' | 'UNAUTHENTICATED' | 'LOADING'
-  error,          // Last error object or null
-  signInWithEmail,
-  signUpWithEmail,
-  signOut,
-  clearError
+  user,              // Current user object or null
+  status,            // AuthStatus enum
+  error,             // Last error object or null
+  isLoading,         // Boolean loading state
+  signInWithEmail,   // Sign in method
+  signUpWithEmail,   // Sign up method
+  signOut,           // Sign out method
+  clearError         // Clear error state
 } = useAuth();
 ```
 
-**Methods:**
+#### Available Methods
 
 | Method | Signature | Description |
 |--------|-----------|-------------|
-| `signInWithEmail` | `(email: string, password: string) => Promise<void>` | Sign in existing user |
-| `signUpWithEmail` | `(email: string, password: string) => Promise<void>` | Create new account |
+| `signInWithEmail` | `(options: {email, password}) => Promise<void>` | Sign in existing user |
+| `signUpWithEmail` | `(options: {email, password}) => Promise<void>` | Create new account |
 | `signOut` | `() => Promise<void>` | Log out current user |
 | `clearError` | `() => void` | Clear error state |
 
-### `<AuthScreen>` Component
-
-Pre-built authentication UI with login and signup.
-
-**Props:**
-
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `styles` | `AuthScreenStyles` | `undefined` | Custom styles object |
-| `titles` | `object` | `undefined` | Custom text labels |
-| `showPasswordHints` | `boolean` | `true` | Show password requirements |
-
-**Example:**
-
-```tsx
-<AuthScreen 
-  titles={{
-    loginTitle: "Welcome Back",
-    loginSubtitle: "Sign in to continue",
-    signupTitle: "Create Account",
-    signupSubtitle: "Join us today"
-  }}
-  styles={{
-    container: { backgroundColor: '#f5f5f5' },
-    button: { backgroundColor: '#007AFF' },
-    buttonText: { color: '#ffffff' }
-  }}
-  showPasswordHints={true}
-/>
-```
-
 ---
 
-## 🎨 Customization Examples
+## Customization
 
-### Dark Mode Theme
+### Dark Mode Theme Example
 
-```tsx
+```typescript
 <AuthScreen 
   styles={{
     container: { backgroundColor: '#1a1a1a' },
@@ -385,100 +233,83 @@ Pre-built authentication UI with login and signup.
 />
 ```
 
-### Custom UI (Headless)
-
-Build your own interface using the `useAuth()` hook:
-
-```tsx
-import { useState } from 'react';
-import { View, TextInput, Button, Text } from 'react-native';
-import { useAuth } from 'rn-swiftauth-sdk';
-
-export const CustomLoginScreen = () => {
-  const { signInWithEmail, error } = useAuth();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-
-  const handleLogin = async () => {
-    try {
-      await signInWithEmail(email, password);
-    } catch (err) {
-      console.error('Login failed:', err);
-    }
-  };
-
-  return (
-    <View style={{ padding: 20 }}>
-      <Text style={{ fontSize: 24, marginBottom: 20 }}>Login</Text>
-      
-      {error && <Text style={{ color: 'red' }}>{error.message}</Text>}
-      
-      <TextInput 
-        placeholder="Email"
-        value={email}
-        onChangeText={setEmail}
-        style={{ borderWidth: 1, padding: 10, marginBottom: 10 }}
-      />
-      
-      <TextInput 
-        placeholder="Password"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-        style={{ borderWidth: 1, padding: 10, marginBottom: 20 }}
-      />
-      
-      <Button title="Sign In" onPress={handleLogin} />
-    </View>
-  );
-};
-```
-
 ---
 
-## ⚠️ Error Handling
+## Error Handling
 
-SwiftAuth maps Firebase errors to user-friendly codes:
+SwiftAuth maps Firebase errors to user-friendly messages:
 
-| Error Code | Meaning | User Message |
-|------------|---------|--------------|
-| `auth/invalid-credentials` | Wrong email/password | "Invalid email or password." |
-| `auth/user-not-found` | Account doesn't exist | "Invalid email or password." |
-| `auth/email-already-in-use` | Email already registered | "This email is already registered." |
-| `auth/weak-password` | Password too weak | "Password is too weak." |
-| `auth/network-request-failed` | No internet connection | "Network error. Please check your connection." |
-| `auth/invalid-email` | Invalid email format | "Invalid email address." |
-| `auth/configuration-error` | Missing API keys | "Authentication is not configured correctly." |
+| Error Code | User Message |
+|------------|--------------|
+| `auth/invalid-credentials` | "Invalid email or password." |
+| `auth/user-not-found` | "Invalid email or password." |
+| `auth/email-already-in-use` | "This email is already registered." |
+| `auth/weak-password` | "Password is too weak." |
+| `auth/network-request-failed` | "Network error. Please check your connection." |
 
-**Usage:**
+### Basic Usage
 
-```tsx
+```typescript
 const { error } = useAuth();
 
 if (error) {
-  if (error.code === 'auth/network-request-failed') {
-    return <OfflineBanner />;
-  }
   return <Text style={{ color: 'red' }}>{error.message}</Text>;
 }
 ```
 
+### Advanced: Raw Firebase Errors
+
+For custom UI implementations, access raw Firebase errors:
+
+**Method 1: Try/Catch Block**
+```typescript
+const { signInWithEmail } = useAuth();
+
+const handleLogin = async () => {
+  try {
+    await signInWithEmail({ email, password });
+  } catch (rawError: any) {
+    if (rawError.code === 'auth/requires-recent-login') {
+      showReauthModal();
+    } else if (rawError.code === 'auth/quota-exceeded') {
+      Alert.alert("System Overload", "Please try again later.");
+    }
+  }
+};
+```
+
+**Method 2: Global State**
+```typescript
+const { error } = useAuth();
+
+useEffect(() => {
+  if (error?.originalError) {
+    const rawCode = (error.originalError as any).code;
+    console.log("Raw Firebase Code:", rawCode);
+    
+    if (rawCode === 'auth/invalid-email') {
+      setLocalizedMessage(t('errors.bad_email'));
+    }
+  }
+}, [error]);
+```
+
 ---
 
-## 🔐 Session Management
+## Session Management
 
 ### Keep User Logged In (Default)
 
-```tsx
+```typescript
 const config = {
   ...firebaseConfig,
   persistence: 'local' // User stays logged in
 };
 ```
 
-### Banking App Mode
+### Memory-Only Session
 
-```tsx
+```typescript
 const config = {
   ...firebaseConfig,
   persistence: 'memory' // User logged out when app closes
@@ -487,15 +318,11 @@ const config = {
 
 ---
 
-## 🔌 Connecting to a Custom Backend
+## Backend Integration
 
-The SwiftAuth SDK handles the complexity of authentication (Google, Apple, Email), but you likely have your own API for user data.
+The SDK exposes a secure Firebase ID Token (`user.token`) for backend authentication.
 
-The SDK exposes a secure Firebase ID Token (`user.token`) that you can send to your backend to identify the user.
-
-### 1. Frontend: Sending the Token
-
-In your React Native app, access the token from the `useAuth` hook and include it in the `Authorization` header of your API requests.
+### Frontend: Sending the Token
 
 ```typescript
 import { useAuth } from 'rn-swiftauth-sdk';
@@ -511,13 +338,12 @@ const UserProfile = () => {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          // Send the token as a Bearer token
           'Authorization': `Bearer ${user.token}`
         }
       });
-
+      
       const data = await response.json();
-      console.log('Secure Data:', data);
+      console.log(data);
     } catch (error) {
       console.error('Request failed:', error);
     }
@@ -527,24 +353,12 @@ const UserProfile = () => {
 };
 ```
 
-### 2. Backend: Verifying the Token
-
-Your backend must verify this token to ensure the request is legitimate. You can use the Firebase Admin SDK for this.
-
-**Example (Node.js / Express):**
+### Backend: Verifying the Token (Node.js)
 
 ```javascript
 const admin = require('firebase-admin');
-const express = require('express');
-const app = express();
 
-// 1. Initialize Firebase Admin with your Service Account
-const serviceAccount = require('./path/to/serviceAccountKey.json');
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount)
-});
-
-// 2. Middleware to Verify Token
+// Middleware to verify Firebase ID token
 const verifyToken = async (req, res, next) => {
   const authHeader = req.headers.authorization;
   
@@ -553,39 +367,25 @@ const verifyToken = async (req, res, next) => {
   }
 
   const idToken = authHeader.split('Bearer ')[1];
-
+  
   try {
-    // Decodes the token and checks signature
     const decodedToken = await admin.auth().verifyIdToken(idToken);
-    
-    // Attach user info to request (uid, email, etc.)
-    req.user = decodedToken; 
+    req.user = decodedToken;
     next();
   } catch (error) {
     res.status(403).send('Invalid Token');
   }
 };
 
-// 3. Protect Routes
+// Protected route example
 app.get('/profile', verifyToken, (req, res) => {
-  // Access user info securely
-  res.json({ message: `Hello ${req.user.email}, here is your private data.` });
+  res.json({ userId: req.user.uid, email: req.user.email });
 });
 ```
 
-### Supported Backends
-
-This pattern works with any backend language that has a Firebase Admin SDK, including:
-
-- Node.js
-- Python
-- Go
-- Java
-- .NET
-
 ---
 
-## 🧪 Example App
+## Example App
 
 Check out our example implementation:
 
@@ -605,47 +405,20 @@ npx expo start
 
 ---
 
-## 📖 Additional Resources
+## Contributing
 
-- [Installation Guide](https://github.com/allcodez/Auth-SDK_Stage8/blob/main/docs/installation.md)
-- [Getting Started](https://github.com/allcodez/Auth-SDK_Stage8/blob/main/docs/getting-started.md)
-- [API Reference](https://github.com/allcodez/Auth-SDK_Stage8/blob/main/docs/api-reference.md)
-- [Usage Examples](https://github.com/allcodez/Auth-SDK_Stage8/blob/main/docs/usage-examples.md)
-- [Error Codes](https://github.com/allcodez/Auth-SDK_Stage8/blob/main/docs/error-codes.md)
+We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ---
 
-## 🤝 Contributing
+## License
 
-We welcome contributions! See [CONTRIBUTING.md](https://github.com/allcodez/Auth-SDK_Stage8/blob/main/CONTRIBUTING.md) for guidelines.
-
----
-
-## 📄 License
-
-MIT License - see [LICENSE](https://github.com/allcodez/Auth-SDK_Stage8/blob/main/LICENSE) file for details.
+MIT License - see [LICENSE](LICENSE) file for details.
 
 ---
 
-## 🆘 Support
+## Support
 
-- 📧 Email: support@swiftauth.dev
-- 🐛 Issues: [GitHub Issues](https://github.com/allcodez/Auth-SDK_Stage8/issues)
-- 💬 Discussions: [GitHub Discussions](https://github.com/allcodez/Auth-SDK_Stage8/discussions)
-- 📦 NPM Package: [rn-swiftauth-sdk](https://www.npmjs.com/package/rn-swiftauth-sdk)
-
----
-
-## 🎯 Roadmap
-
-- [ ] Password reset functionality
-- [ ] Email verification
-- [ ] Phone authentication
-- [ ] Multi-factor authentication (MFA)
-- [ ] Biometric authentication
-- [ ] Session refresh tokens
-- [x] NPM package distribution
-
----
-
-Made with ❤️ by the SwiftAuth Team
+- **Issues:** [GitHub Issues](https://github.com/allcodez/Auth-SDK_Stage8/issues)
+- **NPM Package:** [rn-swiftauth-sdk](https://www.npmjs.com/package/rn-swiftauth-sdk)
+- **Documentation:** [Full Docs](https://github.com/allcodez/Auth-SDK_Stage8)

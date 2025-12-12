@@ -1,3 +1,12 @@
+export declare enum ProviderErrorCodes {
+    USER_TOKEN_EXPIRED = "auth/user-token-expired",
+    NULL_USER = "auth/null-user",
+    GOOGLE_CANCELLED = "SIGN_IN_CANCELLED",
+    GOOGLE_IN_PROGRESS = "IN_PROGRESS",
+    GOOGLE_PLAY_UNAVAILABLE = "PLAY_SERVICES_NOT_AVAILABLE",
+    APPLE_CANCELLED = "ERR_REQUEST_CANCELED",
+    APPLE_NOT_SUPPORTED = "APPLE_SIGN_IN_NOT_SUPPORTED"
+}
 export declare enum AuthErrorCode {
     INVALID_CREDENTIALS = "auth/invalid-credentials",
     USER_NOT_FOUND = "auth/user-not-found",
@@ -17,7 +26,7 @@ export declare enum AuthErrorCode {
     APPLE_SIGN_IN_NOT_SUPPORTED = "APPLE_SIGN_IN_NOT_SUPPORTED"
 }
 export interface AuthError {
-    code: AuthErrorCode;
+    code: string | ProviderErrorCodes | AuthErrorCode;
     message: string;
     originalError?: any;
 }

@@ -40,22 +40,20 @@ const useAuth_1 = require("../hooks/useAuth");
 const PasswordInput_1 = require("./PasswordInput");
 const validation_1 = require("../utils/validation");
 const SignUpForm = ({ styles: userStyles, showHints = true }) => {
-    const { signUpWithEmail, signInWithGoogle, signInWithApple, isLoading, // ✅ Use boolean loading state
-    error, config // ✅ Use config for conditional rendering
-     } = (0, useAuth_1.useAuth)();
+    const { signUpWithEmail, signInWithGoogle, signInWithApple, isLoading, error, config } = (0, useAuth_1.useAuth)();
     const [email, setEmail] = (0, react_1.useState)('');
     const [password, setPassword] = (0, react_1.useState)('');
     const [confirmPassword, setConfirmPassword] = (0, react_1.useState)('');
-    // ✅ Proper Validation State
     const [validationErrors, setValidationErrors] = (0, react_1.useState)({});
-    // Password Requirements Logic for Visual Hints
+    // 1. Smart Button Logic: Check if all fields have content
+    const isFormFilled = email.length > 0 && password.length > 0 && confirmPassword.length > 0;
+    // Password Requirements Logic
     const requirements = [
         { label: "At least 6 characters", met: password.length >= 6 },
         { label: "Contains a number", met: /\d/.test(password) },
         { label: "Passwords match", met: password.length > 0 && password === confirmPassword }
     ];
     const handleSignUp = async () => {
-        // 1. Reset Errors
         setValidationErrors({});
         // 2. Validate Inputs
         const emailErr = (0, validation_1.validateEmail)(email);
@@ -64,7 +62,6 @@ const SignUpForm = ({ styles: userStyles, showHints = true }) => {
         if (password !== confirmPassword) {
             confirmErr = "Passwords do not match.";
         }
-        // 3. Check if any errors exist
         if (emailErr || passErr || confirmErr) {
             setValidationErrors({
                 email: emailErr || undefined,
@@ -73,12 +70,12 @@ const SignUpForm = ({ styles: userStyles, showHints = true }) => {
             });
             return;
         }
-        // 4. Attempt Sign Up
         try {
-            await signUpWithEmail(email, password);
+            // ✅ UPDATED: New Object Syntax
+            await signUpWithEmail({ email, password });
         }
         catch (e) {
-            // Global error handled by useAuth
+            console.error('Sign Up Failed:', e);
         }
     };
     const handleGoogleSignIn = async () => {
@@ -130,9 +127,12 @@ const SignUpForm = ({ styles: userStyles, showHints = true }) => {
                 ] }, req.label)))))),
         react_1.default.createElement(react_native_1.TouchableOpacity, { style: [
                 defaultStyles.button,
-                isLoading && defaultStyles.buttonDisabled,
+                // Disable style if loading OR form incomplete
+                (isLoading || !isFormFilled) && defaultStyles.buttonDisabled,
                 userStyles?.button
-            ], onPress: handleSignUp, disabled: isLoading }, isLoading ? (react_1.default.createElement(react_native_1.ActivityIndicator, { color: userStyles?.loadingIndicatorColor || "#fff" })) : (react_1.default.createElement(react_native_1.Text, { style: [defaultStyles.buttonText, userStyles?.buttonText] }, "Create Account"))),
+            ], onPress: handleSignUp, 
+            // Disable interaction if loading OR form incomplete
+            disabled: isLoading || !isFormFilled }, isLoading ? (react_1.default.createElement(react_native_1.ActivityIndicator, { color: userStyles?.loadingIndicatorColor || "#fff" })) : (react_1.default.createElement(react_native_1.Text, { style: [defaultStyles.buttonText, userStyles?.buttonText] }, "Create Account"))),
         (config.enableGoogle || config.enableApple) && !isLoading && (react_1.default.createElement(react_1.default.Fragment, null,
             react_1.default.createElement(react_native_1.View, { style: defaultStyles.dividerContainer },
                 react_1.default.createElement(react_native_1.View, { style: defaultStyles.divider }),
@@ -150,7 +150,7 @@ const defaultStyles = react_native_1.StyleSheet.create({
         backgroundColor: '#f5f5f5',
         padding: 15,
         borderRadius: 8,
-        marginBottom: 8, // Reduced for validation text space
+        marginBottom: 8,
         borderWidth: 1,
         borderColor: '#e0e0e0',
         fontSize: 16,
@@ -162,11 +162,13 @@ const defaultStyles = react_native_1.StyleSheet.create({
         alignItems: 'center',
         marginTop: 8,
     },
-    buttonDisabled: { backgroundColor: '#9ce4ae' },
+    buttonDisabled: {
+        backgroundColor: '#9ce4ae',
+        opacity: 0.7
+    },
     buttonText: { color: '#fff', fontWeight: '600', fontSize: 16 },
     globalError: { color: 'red', marginBottom: 12, fontSize: 14, textAlign: 'center' },
     validationText: { color: 'red', fontSize: 12, marginBottom: 10, marginLeft: 4, marginTop: -4 },
-    // OAuth Styles
     dividerContainer: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -190,7 +192,6 @@ const defaultStyles = react_native_1.StyleSheet.create({
     googleButtonText: { color: '#000', fontSize: 16, fontWeight: '500' },
     appleButton: { backgroundColor: '#000' },
     appleButtonText: { color: '#fff', fontSize: 16, fontWeight: '600' },
-    // Password Hint Styles
     hintContainer: { marginBottom: 15, paddingLeft: 5 },
     hintRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 4 },
     hintText: { color: '#666', fontSize: 12 },
