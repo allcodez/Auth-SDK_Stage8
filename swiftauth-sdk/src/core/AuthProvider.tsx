@@ -2,6 +2,8 @@ import React, { useEffect, useState, ReactNode, useMemo } from 'react';
 import { Platform } from 'react-native';
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
 import * as FirebaseAuth from 'firebase/auth';
+
+import { sendPasswordResetEmail } from 'firebase/auth'; 
 import ReactNativeAsyncStorage from '@react-native-async-storage/async-storage';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import * as AppleAuthentication from 'expo-apple-authentication';
@@ -152,6 +154,26 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ config, children }) 
     }
   };
 
+
+  const sendPasswordReset = async (email: string) => {
+    if (!firebaseAuthInstance) return;
+    try {
+      setError(null);
+      setStatus(AuthStatus.LOADING);
+      
+      await sendPasswordResetEmail(firebaseAuthInstance, email);
+      
+
+      setStatus(AuthStatus.UNAUTHENTICATED);
+      console.log(`Password reset email sent to ${email}`);
+    } catch (err: any) {
+      const mappedException = mapFirebaseError(err);
+      setError(mappedException);
+      setStatus(AuthStatus.UNAUTHENTICATED);
+      throw mappedException;
+    }
+  };
+
   const signInWithGoogle = async () => {
     if (!firebaseAuthInstance) throw new Error('Firebase not initialized');
     if (!config.enableGoogle || !config.googleWebClientId) {
@@ -286,6 +308,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ config, children }) 
     config,
     signInWithEmail,
     signUpWithEmail,
+    sendPasswordReset,
     signInWithGoogle,
     signInWithApple,
     signOut,
