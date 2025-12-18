@@ -231,6 +231,120 @@ const {
     buttonText: { color: '#000000', fontWeight: 'bold' }
   }}
 />
+
+
+
+---
+
+## 🔐 Password Management
+
+The **SwiftAuth SDK** includes built-in support for **password recovery flows** using **Firebase’s email-based password reset mechanism**.
+
+---
+
+### ✉️ Sending a Reset Email
+
+The `sendPasswordReset(email)` function sends a password reset link to the user’s email address.
+
+#### Method Signature
+
+```ts
+sendPasswordReset: (email: string) => Promise<void>
+```
+
+---
+
+### 📌 Usage Example (React Native)
+
+```ts
+import React, { useState } from 'react';
+import { View, TextInput, Button, Alert, Text } from 'react-native';
+import { useAuth } from 'rn-swiftauth-sdk';
+
+export const ForgotPasswordScreen = () => {
+  const [email, setEmail] = useState('');
+  const { sendPasswordReset, isLoading, error } = useAuth();
+
+  const handleReset = async () => {
+    if (!email) {
+      Alert.alert("Error", "Please enter your email address.");
+      return;
+    }
+
+    try {
+      await sendPasswordReset(email);
+      Alert.alert("Success", "Password reset link sent! Check your email.");
+    } catch (err) {
+      // Errors are automatically handled by the global `error` state,
+      // but can also be caught locally for custom logic.
+      console.error("Reset failed:", err);
+    }
+  };
+
+  return (
+    <View>
+      <TextInput
+        placeholder="Enter your email"
+        value={email}
+        onChangeText={setEmail}
+        autoCapitalize="none"
+        keyboardType="email-address"
+      />
+
+      <Button
+        title={isLoading ? "Sending..." : "Reset Password"}
+        onPress={handleReset}
+        disabled={isLoading}
+      />
+
+      {error && <Text style={{ color: 'red' }}>{error.message}</Text>}
+    </View>
+  );
+};
+```
+
+---
+
+### ⚠️ Error Handling
+
+The error handling system includes **specific exceptions** for password reset flows.
+
+| Exception Class         | Error Code            | User Message                                                        |
+| ----------------------- | --------------------- | ------------------------------------------------------------------- |
+| `UserNotFoundException` | `auth/user-not-found` | "No account found with this email. Please check the email address." |
+| `InvalidEmailException` | `auth/invalid-email`  | "The email address is badly formatted."                             |
+
+Errors are exposed through the global `error` state returned by `useAuth()` and can also be handled locally using `try/catch`.
+
+---
+
+### 🎨 Integration with Custom UI
+
+You can integrate password recovery into **custom login forms** by toggling a “Forgot Password” mode using the headless hook.
+
+```ts
+const { sendPasswordReset } = useAuth();
+
+const onForgotPasswordPress = async (email: string) => {
+  await sendPasswordReset(email);
+  // Show success feedback to the user
+};
+```
+
+This allows you to fully control your UI while leveraging SwiftAuth’s secure password reset flow.
+
+---
+
+If you want, I can also:
+
+* Add **UX flow diagrams**
+* Add **Firebase setup prerequisites**
+* Document **rate limits & edge cases**
+* Align tone with the rest of your SDK README
+
+Just tell me 👍
+
+
 ```
 
 ---

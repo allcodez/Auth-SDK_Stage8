@@ -38,7 +38,7 @@ export interface AuthContextType {
   // Function Signatures
   signInWithEmail: (options: EmailSignInOptions) => Promise<void>;
   signUpWithEmail: (options: EmailSignUpOptions) => Promise<void>;
-
+  sendPasswordReset: (email: string) => Promise<void>;
   signInWithGoogle: () => Promise<void>;
   signInWithApple: () => Promise<void>;
   signOut: () => Promise<void>;
